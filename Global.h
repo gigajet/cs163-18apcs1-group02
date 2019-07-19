@@ -29,12 +29,14 @@ public:
 
 };
 
-set<int> And(set<int> prevRes, string keyword, bool inTitle); //1
-set<int> Or(set<int> prevRes, string keyword, bool inTitle); //2
-set<int> Exclude(set<int> prevRes, string keyword, bool inTitle); //3
+//mustInTitle=false -> search both Title and Content, not just the content.
+
+set<int> And(set<int> prevRes, string keyword, bool mustInTitle); //1
+set<int> Or(set<int> prevRes, string keyword, bool mustInTitle); //2
+set<int> Exclude(set<int> prevRes, string keyword, bool mustInTitle); //3
 
 set<int> HashTag(set<int> prevRes, string keyword); //8
-set<int> ExactMatch(set<int> prevRes, string keyword, bool inTitle); //9
+set<int> ExactMatch(set<int> prevRes, string keyword, bool mustInTitle); //9
 
 
 #endif // !GLOBAL_H_
