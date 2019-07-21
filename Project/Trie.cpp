@@ -5,9 +5,9 @@ void Trie::Insert(TrieNode* &root, string word, bool isInTitle, int fileIndex)
 	if (root == NULL)
 	{
 		root = new TrieNode();
-		if (isInTitle) root->fileIndexTitle.insert(fileIndex);
-		root->fileIndex.insert(fileIndex);
-		return;
+		//if (isInTitle) root->fileIndexTitle.insert(fileIndex);
+		//root->fileIndex.insert(fileIndex);
+		//return;
 	}
 	TrieNode* current = root;
 	for (char i : word)
@@ -19,13 +19,16 @@ void Trie::Insert(TrieNode* &root, string word, bool isInTitle, int fileIndex)
 			current->child[i] = node;
 		}
 		//update node information
-		if (isInTitle) node->fileIndexTitle.insert(fileIndex);
-		node->fileIndex.insert(fileIndex);
+		//if (isInTitle) node->fileIndexTitle.insert(fileIndex);
+		//node->fileIndex.insert(fileIndex);
 
 		current = node;
 		current->prefixes++;
 	}
 	current->isEndOfWord = true;
+	if (isInTitle) current->fileIndexTitle.insert(fileIndex);
+	current->fileIndex.insert(fileIndex);
+
 }
 
 int Trie::CountPrefix(TrieNode* root, string word)
@@ -41,13 +44,36 @@ int Trie::CountPrefix(TrieNode* root, string word)
 
 set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 {
+	set<int> result;
+	if (root == NULL) return result;
 	for (auto i : word)
 	{
 		TrieNode* node = root->child[i];
-		if (node == NULL) return set<int>();
+		if (node == NULL) return result;
 		root = node;
 	}
-	return (isInTitle) ? root->fileIndexTitle : root->fileIndex;
+	
+	queue<TrieNode*> q;
+	q.push(root);
+
+	while (!q.empty())
+	{
+		TrieNode* u = q.front();
+		q.pop();
+		if (u->isEndOfWord)
+		{
+			if (isInTitle)
+				result.insert(u->fileIndexTitle.begin(), u->fileIndexTitle.end());
+			else
+				result.insert(u->fileIndex.begin(), u->fileIndex.end());
+		}
+		for (auto i : u->child)
+		{
+			q.push(i.second);
+		}
+	}
+
+	return result;
 }
 
 Trie::Trie()
@@ -68,6 +94,20 @@ int Trie::CountPrefix(string word)
 set<int> Trie::Search(string word, bool isInTitle)
 {
 	return Search(root, word, isInTitle);
+}
+
+void Trie::Destructor()
+{
+	Destructor(root);
+}
+
+void Trie::Destructor(TrieNode* &root)
+{
+	if (root == NULL) return;
+	for (auto i : root->child)
+		Destructor(i.second);
+	delete root;
+	root = NULL;
 }
 
 

@@ -12,6 +12,7 @@
 #include <set>
 #include <fstream>
 #include <sstream>
+#include <queue>
 
 using namespace std;
 
@@ -43,6 +44,8 @@ public:
 	int CountPrefix(string word);
 	set<int> Search(string word, bool isInTitle);
 	//void ReadData(string path);
+	void Destructor();
+	void Destructor(TrieNode* &root);
 };
 
 
