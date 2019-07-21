@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include "Trie.h"
+#include <stack>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ public:
 	static Global* GetInstance();
 
 };
-
+/*
 set<int> And(set<int> prevRes, string keyword); //1
 set<int> Or(set<int> prevRes, string keyword); //2
 set<int> Exclude(set<int> prevRes, string keyword); //3
@@ -36,6 +37,33 @@ set<int> InTitle(set<int> prevRes, string keyword); //4
 
 set<int> HashTag(set<int> prevRes, string keyword); //8
 set<int> ExactMatch(set<int> prevRes, string keyword); //9
+*/
 
+/*DEFINITION CANDIDATE 3*/
+//For consistent data type.
+typedef set<int> QueryAnswer;
+typedef string Token;
+typedef vector<Token> Expression;
+
+QueryAnswer And(QueryAnswer a, QueryAnswer b);
+QueryAnswer Or(QueryAnswer a, QueryAnswer b);
+QueryAnswer Exclude(QueryAnswer a);
+
+QueryAnswer Search(Token keyword);
+QueryAnswer Exact(Token keyword);
+QueryAnswer InTitle(Token keyword);
+
+/*
+  Job:
+  0. If the name "RefineToken" is bad, change it.
+  1. Convert all to lowercase
+  2. "I love -you" -> "i","or","love","or","-","you"
+  3. "#surevkl intitle:Dota2Vn -cOtICK -> "#surevkl","or","intitle","dota2vn","and","-","cotick"
+  //And or Or when no operator between? Think, think twice and contact the one doing RPN thing.
+*/
+Expression RefineToken(string Query);
+
+Expression ConvertToRPN(Expression e);
+QueryAnswer CalculateRPN(Expression rpn);
 
 #endif // !GLOBAL_H_
