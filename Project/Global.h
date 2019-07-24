@@ -66,4 +66,6 @@ Expression RefineToken(string Query);
 Expression ConvertToRPN(Expression e);
 QueryAnswer CalculateRPN(Expression rpn);
 
+vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList);
+
 #endif // !GLOBAL_H_
