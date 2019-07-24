@@ -1,5 +1,5 @@
 #include "Global.h"
-
+#include<iterator>
 void Global::ReadData(string path)
 {
 	fileName.clear();
@@ -62,7 +62,7 @@ void Global::ReadData(string path)
 		temp.clear();
 		//vector<string> line;
 		//doc dong dau (title)
-		if (getline(data, word))
+		while (getline(data, word))
 		{
 			if (word.length() != 0)
 			{
@@ -73,18 +73,23 @@ void Global::ReadData(string path)
 						temp.push_back(i);
 					else
 					{
-						if (temp.size() == 0) continue;
-						trie.Insert(temp, true, index);
-						//cout << temp<< " " << filename << endl;
-						//trie.Insert(temp, true, index);
-						//line.push_back(temp);
-						temp.clear();
+						if (temp.size() != 0)
+						{
+							trie.Insert(temp, true, index);
+							//cout << temp<< " " << filename << endl;
+							//trie.Insert(temp, true, index);
+							//line.push_back(temp);
+							temp.clear();
+						}
 					}
 				}
+				if (temp.size() != 0) trie.Insert(temp, true, index);
+				temp.clear();
+				break;
 			}
 		}
-		//cout << temp << " " << filename << endl;
-		if (temp.size() != 0) trie.Insert(temp, true, index);
+		cout << temp << " " << filename << endl;
+		//if (temp.size() != 0) trie.Insert(temp, true, index);
 			//trie.Insert(word, true, index);
 			/*if (word.length() != 0)
 			{
@@ -116,6 +121,8 @@ void Global::ReadData(string path)
 					temp.clear();
 				}
 			}
+			if (temp.size() != 0) trie.Insert(temp, false, index);
+			temp.clear();
 		}
 		//cout << temp << " " << filename << endl;
 		if (temp.size() != 0) trie.Insert(temp, false, index);
@@ -125,8 +132,7 @@ void Global::ReadData(string path)
 		data.close();
 	}
 	fin.close();
-	//string listFile = path + "___index.txt";
-
+	//string listFile = path + "___index.txt"
 	//FILE* fin = fopen(listFile.c_str(), "r");
 
 	//char filename[1000];
@@ -177,4 +183,44 @@ Global* Global::instance = 0;
 Global::Global() 
 {
 	fileName.clear();
+}
+
+QueryAnswer And(QueryAnswer a, QueryAnswer b)
+{	
+	QueryAnswer temp;
+	if (a.empty() || b.empty())
+		return temp;
+	//find common element in 2 set preRes and temp
+	QueryAnswer intersectSet;
+	set_intersection(a.begin(), a.end(), temp.begin(), b.end(),b.end(),inserter(intersectSet,intersectSet.begin()));
+	return intersectSet;
+}
+QueryAnswer Or(QueryAnswer a, QueryAnswer b)
+{
+	QueryAnswer temp;
+	if (a.empty())
+		return b;
+	else if (b.empty())
+		return a;
+	else if (a.empty() && b.empty()) //return empty set
+		return temp;
+	for (QueryAnswer::iterator it = a.begin(); it != a.end(); ++it)//set automatically delete duplicates
+		b.insert(*it);
+	return b;
+}
+QueryAnswer Exclude(QueryAnswer a, QueryAnswer b)
+{
+	QueryAnswer temp;
+	// nothing to exclude
+	if (a.empty() || (a.empty() && b.empty()))
+		return temp;
+	//a - 0 =a
+	else if (b.empty())
+		return a;
+	QueryAnswer intersectSet = And(a, b);
+	for ( QueryAnswer::iterator it=intersectSet.begin();it!=intersectSet.end();++it) // delete the commen elements between set a and b
+	{
+		a.erase(*it);
+	}
+	return a;
 }

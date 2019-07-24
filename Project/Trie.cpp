@@ -1,6 +1,6 @@
 #include "Trie.h"
 
-void Trie::Insert(TrieNode* &root, string word, bool isInTitle, int fileIndex)
+void Trie::Insert(TrieNode* &root, string word, bool isInTitle, int fil eIndex)
 {
 	if (root == NULL)
 	{
@@ -62,17 +62,17 @@ set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 		q.pop();
 		if (u->isEndOfWord)
 		{
+			
 			if (isInTitle)
 				result.insert(u->fileIndexTitle.begin(), u->fileIndexTitle.end());
 			else
 				result.insert(u->fileIndex.begin(), u->fileIndex.end());
 		}
 		for (auto i : u->child)
-		{
+		{		
 			q.push(i.second);
 		}
 	}
-
 	return result;
 }
 
