@@ -1,9 +1,15 @@
 #include "Trie.h"
 #include "Global.h"
+#include <chrono>
 
 using namespace std;
 
+
 #define TESTING_PHASE
+
+#ifdef TESTING_PHASE
+using namespace std::chrono;
+#endif
 
 void test()
 {
@@ -73,11 +79,44 @@ void testRPN() {
 	cout << endl;
 }
 
+void testAho() {
+	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
+	int Count = 0;
+	{
+		string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
+		string listFile = path + "___index.txt";
+		ifstream fin;
+		fin.open(listFile);
+		string filename;
+		while (getline(fin, filename))
+		{
+			filename = path + filename;
+			Global::GetInstance()->fileName.push_back(filename);
+			Count++;
+		}
+		fin.close();
+	}
+	set<int> s;
+	for (int i = 0; i < Count; ++i) s.insert(i);
+	vector<Token> tokenList;
+
+	tokenList.push_back("\"De*Q*Su\"");
+
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
+	AhoCorasick(s, tokenList);
+
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(t2 - t1).count();
+	cout << "Aho corasick run in: " << duration;
+}
+
 int main()
 {
 #ifdef TESTING_PHASE
 	//test();
-	testRPN();
+	//testRPN();
+	testAho();
 #else
 	//Do real thing
 	
