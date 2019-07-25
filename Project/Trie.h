@@ -44,6 +44,7 @@ public:
 	int CountPrefix(string word);
 	set<int> Search(string word, bool isInTitle);
 	//void ReadData(string path);
+	int GetN(string word);
 	void Destructor();
 	void Destructor(TrieNode* &root);
 };

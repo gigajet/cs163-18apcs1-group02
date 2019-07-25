@@ -14,6 +14,8 @@
 #include <sstream>
 #include "Trie.h"
 #include <stack>
+#include "Ranking.h"
+#include <cmath>
 
 using namespace std;
 
@@ -23,6 +25,8 @@ private:
 	static Global* instance;
 	Global();
 public:
+	int TotalDoc = 0;
+	OkapiBM25 oki;
 	Trie trie;
 	vector<string> fileName;
 	void ReadData(string path);
@@ -63,9 +67,14 @@ QueryAnswer InTitle(Token keyword);
 */
 Expression RefineToken(string Query);
 
+int Precedence(Token token);
 Expression ConvertToRPN(Expression e);
 QueryAnswer CalculateRPN(Expression rpn);
 
 vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList);
+
+double calScore(double n, double f, double N, double dl, double avg);
+
+vector<int> Top5Result(QueryAnswer qa, Expression e);
 
 #endif // !GLOBAL_H_
