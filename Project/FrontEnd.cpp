@@ -293,17 +293,7 @@ void showResultandSearch(Token keyword) {
 
 	Expression e = RefineToken(keyword);
 
-	for (auto i : e)
-		cout << i << endl;
-	cout << "========================" << endl;
-
 	e = ConvertToRPN(e);
-
-	for (auto i : e)
-		cout << i << endl;
-
-	system("pause");
-
 
 	Expression path, history;
 	Global* g = Global::GetInstance();

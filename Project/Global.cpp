@@ -72,7 +72,7 @@ void Global::ReadData(string path)
 					i = tolower(i);
 					if (('a' <= i && i <= 'z') || ('0' <= i && i <= '9'))
 						temp.push_back(i);
-					else if (i == '#' && temp.size() == 0)
+					else if ((i == '#' || i == '$') && temp.size() == 0)
 						temp.push_back(i);
 					else
 					{

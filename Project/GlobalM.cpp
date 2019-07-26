@@ -385,8 +385,9 @@ QueryAnswer Exact(Token keyword) {
 	string loweredKw("");
 	for (char c : keyword) {
 		c = tolower(c);
-		if (c == ' ') {
+		if (c == ' ' || c == '\n') {
 			if (cur != "" && cur != "*") {
+				cout << cur;
 				QueryAnswer k = Search(cur);
 				//cerr << cur << "'s size: " << k.size() << endl;
 				lst = And(lst, k);
