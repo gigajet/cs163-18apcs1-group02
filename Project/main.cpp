@@ -137,8 +137,10 @@ void testExactSearch() {
 void testTop5() {
 	if (Global::GetInstance()->fileName.size() == 0)
 		test();
-	QueryAnswer ans = Exact("De Nhi Quoc Su");
-	vector<int> top5 = Top5Result(ans, { "De Nhi Quoc Su" });
+	QueryAnswer ans = Search("vietnam");
+	cout << "Search result: " << ans.size() << endl;
+	vector<int> top5 = Top5Result(ans, { "vietnam" });
+	cout << "Top5: ";
 	for (auto x : top5) cout << x << " ";
 	cout << endl;
 
@@ -165,7 +167,9 @@ int main()
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(t2 - t1).count();
 	cout << "DocFile+Exact+top5 run in: " << duration;
-	
+
+	Global::GetInstance()->trie.Destructor();
+	delete Global::GetInstance();
 #else
 	//Do real thing
 #endif

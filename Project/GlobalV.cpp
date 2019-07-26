@@ -46,7 +46,6 @@ Expression RefineToken(string Query)
 				expression.emplace_back(temp);
 				temp.clear();
 			}
-			/*
 			else if (*it == '"')
 			{
 				if (isFirstDoubleQuotation == false && temp.empty() == true)
@@ -61,7 +60,6 @@ Expression RefineToken(string Query)
 					temp.clear();
 				}
 			}
-			*/
 			else temp.push_back(tolower(*it)); // normal case,*it is not operation,just add *it to temp
 
 		}
