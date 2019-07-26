@@ -3,7 +3,7 @@
 
 using namespace std;
 
-#define TESTING_PHASE1
+//#define TESTING_PHASE1
 
 double calScore(double n, double f, double N, double dl, double avg)
 {

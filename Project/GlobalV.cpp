@@ -19,7 +19,7 @@ bool isOperation(string s, vector<string> operations)
 	}
 	return false;
 }
-Expression RefineToken(string Query)
+vector<string> RefineToken(string Query)
 {
 	vector<string> operations = { "and","or","-","intitle","exact","~" };
 	string delimeter = " ,.;:";
@@ -28,12 +28,11 @@ Expression RefineToken(string Query)
 	int index = 0;
 	string::iterator it = Query.begin();
 	// abc and xyz or def intitle:you ~haha 123. => {"abc","and","xyz","or","def","intitle","you","~","haha","123}
+	bool isFirstDoubleQuotation = false;
 	while (it != Query.end())
 	{
-
 		if (isDelim(*it, delimeter) == false)
 		{
-			bool isFirstDoubleQuotation = false;
 			if (*it == '~' && temp.empty() == true)
 			{
 				temp.push_back('~');
@@ -46,6 +45,7 @@ Expression RefineToken(string Query)
 				expression.emplace_back(temp);
 				temp.clear();
 			}
+
 			else if (*it == '"')
 			{
 				if (isFirstDoubleQuotation == false && temp.empty() == true)
@@ -53,23 +53,34 @@ Expression RefineToken(string Query)
 					isFirstDoubleQuotation = true;
 					temp.push_back('"');
 				}
-				else if (isFirstDoubleQuotation == false && temp.empty() == false)
+				else if (isFirstDoubleQuotation == true && temp.empty() == false)
 				{
+					isFirstDoubleQuotation = false;
 					temp.push_back('"');
 					expression.emplace_back(temp);
 					temp.clear();
 				}
 			}
-			else temp.push_back(tolower(*it)); // normal case,*it is not operation,just add *it to temp
+
+			else
+			{
+				temp.push_back(tolower(*it)); // normal case,*it is not operation,just add *it to temp
+			}
 
 		}
 		else  // case *it is delim
 		{
 			if (!temp.empty())
 			{
-				expression.emplace_back(temp);
-				temp.clear();
+				if (isFirstDoubleQuotation == false)
+				{
+					expression.emplace_back(temp);
+					temp.clear();
+				}
+				else temp.push_back(tolower(*it));
+
 			}
+
 		}
 		++it;
 		//add the last word to expression
@@ -82,6 +93,7 @@ Expression RefineToken(string Query)
 	}
 	// add "or" if there is no operation between two words
 	//{"abc", "and", "xyz", "or", "def", "intitle", "you", "~", "haha", "123"} => {"abc","and","xyz","or","def","intitle","you","~","haha","or","123"}
+
 	vector<string> finalExpression;
 	for (int i = 0; i < expression.size(); ++i)
 	{
