@@ -2,9 +2,10 @@
 #include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 
-#define TESTING_PHASE
+//#define TESTING_PHASE
 
 #ifdef TESTING_PHASE
 using namespace std::chrono;
@@ -96,7 +97,7 @@ void testRefineToken()
 }
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
-	/*int Count = 0;
+	int Count = 0;
 	{
 		string path = "Search Engine-Data\\";
 		string listFile = path + "___index.txt";
@@ -178,6 +179,32 @@ int main()
 	delete Global::GetInstance();
 #else
 	//Do real thing
+
+	string path = "Search Engine-Data\\";
+	Global* g = Global::GetInstance();
+	g->ReadData(path);
+
+	string a = showLogo();
+	showResultandSearch(a);
+
+	/*string key = "vietNaM and live";
+
+	Expression e = RefineToken(key);
+	e = ConvertToRPN(e);
+	cout << "RPN: " << endl;
+	for (auto i : e) cout << i << endl;
+
+	QueryAnswer res = CalculateRPN(e);
+
+	for (auto i : res)
+		cout << g->fileName[i] << endl;*/
+
+	/*QueryAnswer ans = Exact("muc kien lien");
+	for (int i : ans)
+		cout << g->fileName[i] << endl;*/
+
+	Global::GetInstance()->trie.Destructor();
+	delete Global::GetInstance();
 #endif
 	return 0;
 }

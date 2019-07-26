@@ -131,8 +131,7 @@ QueryAnswer CalculateRPN(Expression rpn) {
 			}
 
 		if (st.size() < 1) throw 1;
-		//QueryAnswer ans = get<QueryAnswer>(st.top());
-		QueryAnswer ans = QueryAnswer();
+		QueryAnswer ans = get<QueryAnswer>(st.top());
 		return ans;
 	}
 	catch (int e) {
@@ -348,7 +347,7 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 					if (originalTokenListId[id] != -1) {
 						ans[originalTokenListId[id]].insert(fileIndex);
 #ifdef TESTING_PHASE
-						cerr << "Fileid " << fileIndex << " Ln " << lineNo << " Col " << lineOffset << endl;
+						//cerr << "Fileid " << fileIndex << " Ln " << lineNo << " Col " << lineOffset << endl;
 #endif
 					}
 						
@@ -389,7 +388,7 @@ QueryAnswer Exact(Token keyword) {
 		if (c == ' ') {
 			if (cur != "" && cur != "*") {
 				QueryAnswer k = Search(cur);
-				cerr << cur << "'s size: " << k.size() << endl;
+				//cerr << cur << "'s size: " << k.size() << endl;
 				lst = And(lst, k);
 				cur.clear();
 			}
@@ -401,8 +400,8 @@ QueryAnswer Exact(Token keyword) {
 	if (cur != "" && cur != "*") {
 		lst = And(lst, Search(cur));
 	}
-	cerr << cur;
-	cerr << "lst's size: " << lst.size() << endl;
+	//cerr << cur;
+	//cerr << "lst's size: " << lst.size() << endl;
 	
 	auto ans = AhoCorasick(lst, {"\""+ loweredKw +"\""});
 	return ans[0];
