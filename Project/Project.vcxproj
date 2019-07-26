@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{4B92D9F9-901E-4F99-BC4A-C4A0F7D49634}</ProjectGuid>
     <RootNamespace>Project</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -126,12 +126,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Global.h" />
+    <ClInclude Include="Ranking.h" />
     <ClInclude Include="Trie.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Global.cpp" />
+    <ClCompile Include="GlobalD.cpp" />
     <ClCompile Include="GlobalM.cpp" />
+    <ClCompile Include="GlobalV.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Ranking.cpp" />
     <ClCompile Include="Trie.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -31,7 +31,6 @@ public:
 	vector<string> fileName;
 	void ReadData(string path);
 	static Global* GetInstance();
-
 };
 /*
 set<int> And(set<int> prevRes, string keyword); //1
