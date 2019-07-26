@@ -33,11 +33,13 @@ void Trie::Insert(TrieNode* &root, string word, bool isInTitle, int fileIndex)
 
 int Trie::CountPrefix(TrieNode* root, string word)
 {
+	TrieNode* current = root;
+	if (root == NULL) return 0;
 	for (char i : word)
 	{
-		TrieNode* node = root->child[i];
+		TrieNode* node = current->child[i];
 		if (node == NULL) return 0;
-		root = node;
+		current = node;
 	}
 	return root->prefixes;
 }
@@ -46,15 +48,16 @@ set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 {
 	set<int> result;
 	if (root == NULL) return result;
+	TrieNode* current = root;
 	for (auto i : word)
 	{
-		TrieNode* node = root->child[i];
+		TrieNode* node = current->child[i];
 		if (node == NULL) return result;
-		root = node;
+		current = node;
 	}
 	
 	queue<TrieNode*> q;
-	q.push(root);
+	q.push(current);
 
 	while (!q.empty())
 	{
@@ -105,7 +108,7 @@ int Trie::GetN(string word)
 	{
 		TrieNode* node = current->child[i];
 		if (node == NULL) return 0;
-		root = node;
+		current = node;
 	}
 
 	return (current->isEndOfWord) ? current->fileIndex.size() : 0;

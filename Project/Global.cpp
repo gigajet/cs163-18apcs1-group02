@@ -49,7 +49,7 @@ void Global::ReadData(string path)
 		int length = 0;
 		Count++;
 		//std::cout << filename << '\n';
-		//if (Count == 2) break;
+		//if (Count == 3) break;
 		filename = path + filename;
 
 		fileName.push_back(filename);
