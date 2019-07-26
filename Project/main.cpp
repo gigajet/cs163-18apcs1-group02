@@ -1,5 +1,4 @@
-#include "Trie.h"
-#include "Global.h"
+#include"FrontEnd.h"
 #include <chrono>
 
 using namespace std;
@@ -18,7 +17,7 @@ void test()
 	string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
 	Global* g = Global::GetInstance();
 
-	g->ReadData(path);
+	g->ReadData(s);
 
 	//string teststr = "live";
 
@@ -27,6 +26,11 @@ void test()
 	//for (int i : res) cout << g->fileName[i] << endl;
 
 	//g->trie.Destructor();
+	string a = showLogo();
+	showResultandSearch(a);
+
+	Global::GetInstance()->trie.Destructor();
+	delete Global::GetInstance();
 	return;
 }
 
@@ -92,9 +96,9 @@ void testRefineToken()
 }
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
-	int Count = 0;
+	/*int Count = 0;
 	{
-		string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
+		string path = "Search Engine-Data\\";
 		string listFile = path + "___index.txt";
 		ifstream fin;
 		fin.open(listFile);
@@ -106,17 +110,21 @@ void testAho() {
 			Count++;
 		}
 		fin.close();
+	cout << Global::GetInstance()->fileName.size();
 	}
-	cout << Count << endl;
 	set<int> s;
-	for (int i = 0; i < Count; ++i) s.insert(i);
+	for (int i = 0; i < Global::GetInstance()->fileName.size(); ++i) s.insert(i);
 	vector<Token> tokenList;
 
 	tokenList.push_back("\"De*uo*Su\"");
 
 	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-	AhoCorasick(s, tokenList);
+	vector<QueryAnswer> ttt = AhoCorasick(s, tokenList);
+
+	Top5Result(ttt[0], ConvertToRPN(tokenList));
+
+	//for (auto i : tttt) cout << endl << i;
 
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(t2 - t1).count();
@@ -150,8 +158,6 @@ void testTop5() {
 int main()
 {
 #ifdef TESTING_PHASE
-
-
 	//test();
 
 	//cout << "Doc file run in: " << duration;
