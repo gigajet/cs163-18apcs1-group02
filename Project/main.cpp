@@ -12,8 +12,9 @@ using namespace std::chrono;
 
 void test()
 {
-	string s = "C:\\Users\\Admin\\source\\repos\\cs163-18apcs1-group02-master\\Search Engine-Data\\";
-	string path = "Search Engine-Data\\";
+	string s = "D:\\Study\\HCMUS\\CS\\ProjectCS163\\cs163-18apcs1-group02-master\\cs163-18apcs1-group02-master\\Project\\";
+	//string path = "Search Engine-Data\\";
+	string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
 	Global* g = Global::GetInstance();
 
 	g->ReadData(s);
@@ -68,7 +69,7 @@ void testRPN() {
 	//Case 3
 	cout << "Case 3" << endl;
 	e.clear();
-	e.push_back("\"dangcongsan\""); 
+	e.push_back("\"dang cong san\""); 
 	e.push_back("and");
 	e.push_back("vietnam");
 	e.push_back("and");
@@ -109,13 +110,13 @@ void testAho() {
 			Count++;
 		}
 		fin.close();
-	}*/
 	cout << Global::GetInstance()->fileName.size();
+	}
 	set<int> s;
 	for (int i = 0; i < Global::GetInstance()->fileName.size(); ++i) s.insert(i);
 	vector<Token> tokenList;
 
-	tokenList.push_back("the");
+	tokenList.push_back("\"De*uo*Su\"");
 
 	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
@@ -130,19 +131,49 @@ void testAho() {
 	cout << "Aho corasick run in: " << duration;
 }
 
+void testExactSearch() {
+	if (Global::GetInstance()->fileName.size() == 0)
+		test();
+	QueryAnswer ans = Exact("De Nhi Quoc Su");
+	for (auto i : ans)
+		cout << i << " ";
+	cout << endl;
+	
+	Global::GetInstance()->trie.Destructor();
+}
+
+void testTop5() {
+	if (Global::GetInstance()->fileName.size() == 0)
+		test();
+	QueryAnswer ans = Search("vietnam");
+	cout << "Search result: " << ans.size() << endl;
+	vector<int> top5 = Top5Result(ans, { "vietnam" });
+	cout << "Top5: ";
+	for (auto x : top5) cout << x << " ";
+	cout << endl;
+
+	Global::GetInstance()->trie.Destructor();
+}
+
 int main()
 {
 #ifdef TESTING_PHASE
-	high_resolution_clock::time_point t1 = high_resolution_clock::now();
-	test();
-	high_resolution_clock::time_point t2 = high_resolution_clock::now();
-	auto duration = duration_cast<milliseconds>(t2 - t1).count();
-	cout << "Read data run in: " << duration << endl;
-	
+	//test();
+
+	//cout << "Doc file run in: " << duration;
+
 	//testRPN();
-	testAho();
+	//testAho();
 	//testRefineToken(); //bug in calculateRPN case intitle
 	//testSearch();
+	//testExactSearch();
+
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	testTop5();
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(t2 - t1).count();
+	cout << "DocFile+Exact+top5 run in: " << duration;
+
 	Global::GetInstance()->trie.Destructor();
 	delete Global::GetInstance();
 #else
