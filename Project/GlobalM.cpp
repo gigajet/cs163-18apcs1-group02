@@ -31,13 +31,14 @@ Expression ConvertToRPN(Expression e) {
 
 		int pred = Precedence(token);
 		if (pred == 0) {//not an operator 
-			ans.push_back(token);
-
 			if (token[0] == '\"') {
+				token.erase(0, 1); token.pop_back();
+				ans.push_back(token);
 				if (op.empty() || (op.top()!="intitle") && (op.top()!="~"))
 					ans.push_back("exact");
 			}
 			else {
+				ans.push_back(token);
 				if (op.empty() || (op.top() != "intitle") && (op.top() != "~"))
 					ans.push_back("search");
 			}
@@ -58,7 +59,7 @@ Expression ConvertToRPN(Expression e) {
 	return ans;
 }
 
-//TODO Edit calling function CalculateRPN
+
 QueryAnswer CalculateRPN(Expression rpn) {
 	stack<variant<Token, QueryAnswer, int> > st;
 	bool invalidExpression = 0;
@@ -71,53 +72,53 @@ QueryAnswer CalculateRPN(Expression rpn) {
 					tmp1 = st.top(); st.pop();
 					tmp2 = st.top(); st.pop();
 					QueryAnswer k1 = get<QueryAnswer>(tmp1), k2 = get<QueryAnswer>(tmp2);
-					//st.push(Or(k1, k2));
+					st.push(Or(k1, k2));
 
-					cerr << "Or call." << endl;
-					st.push(QueryAnswer());
+					//cerr << "Or call." << endl;
+					//st.push(QueryAnswer());
 				}
 				if (token == "and") {
 					if (st.size() < 2) throw 1;
 					tmp1 = st.top(); st.pop();
 					tmp2 = st.top(); st.pop();
 					QueryAnswer k1 = get<QueryAnswer>(tmp1), k2 = get<QueryAnswer>(tmp2);
-					//st.push(Or(k1, k2));
+					st.push(And(k1, k2));
 
-					cerr << "And call." << endl;
-					st.push(k1);
+					//cerr << "And call." << endl;
+					//st.push(k1);
 				}
 				if (token == "-") {
 					if (st.size() < 1) throw 1;
 					tmp1 = st.top(); st.pop();
 					QueryAnswer k1 = get<QueryAnswer>(tmp1);
-					//st.push(Exclude(k1));
+					st.push(Exclude(k1));
 
-					cerr << "Exclude call." << endl;
-					st.push(QueryAnswer());
+					//cerr << "Exclude call." << endl;
+					//st.push(QueryAnswer());
 				}
 				if (token == "search") {
 					if (st.size() < 1) throw 1;
 					tmp1 = st.top(); st.pop();
 					Token k1 = get<Token>(tmp1);
-					//st.push(Search(k1));
+					st.push(Search(k1));
 
-					cerr << "Search call for: " << k1 << endl;
-					st.push(QueryAnswer());
+					//cerr << "Search call for: " << k1 << endl;
+					//st.push(QueryAnswer());
 				}
 				if (token == "exact") {
 					if (st.size() < 1) throw 1;
 					tmp1 = st.top(); st.pop();
 					Token k1 = get<Token>(tmp1);
-					//st.push(Exact(k1));
+					st.push(Exact(k1));
 
-					cerr << "Exact call for: " << k1 << endl;
-					st.push(QueryAnswer());
+					//cerr << "Exact call for: " << k1 << endl;
+					//st.push(QueryAnswer());
 				}
 				if (token == "intitle") {
 					if (st.size() < 1) throw 1;
 					tmp1 = st.top(); st.pop();
 					Token k1 = get<Token>(tmp1); //problem with this line
-					//st.push(Exact(k1));
+					//st.push(InTitle(k1));
 
 					cerr << "Intitle call for: " << k1 << endl;
 					st.push(QueryAnswer());
@@ -306,6 +307,7 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 				//offSet++;
 				continue;
 			}
+			c = tolower(c);
 			offSet++; lineOffset++;
 
 			while (state != 0 && g[state].find(c) == g[state].end())
@@ -330,6 +332,8 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 							continue;
 					}
 					//ADDITIONAL: must be the beginning of a word
+					//FOR FIRST TOKEN IN THE EXACT ONLY.
+					if (additionalCheck[id] == -1)
 					{
 						int len = (int)processedToken[id].length();
 						if (offSet - len >= 0) {
@@ -367,3 +371,40 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 
 	return ans;
 }
+
+QueryAnswer Search(Token keyword) {
+	Global *g = Global::GetInstance();
+	return g->trie.Search(keyword, false);
+}
+
+QueryAnswer Exact(Token keyword) {
+	set<int> lst;
+	for (auto i = 0; i < Global::GetInstance()->fileName.size(); ++i)
+		lst.insert(i);
+
+	string cur("");
+	string loweredKw("");
+	for (char c : keyword) {
+		c = tolower(c);
+		if (c == ' ') {
+			if (cur != "" && cur != "*") {
+				QueryAnswer k = Search(cur);
+				cerr << cur << "'s size: " << k.size() << endl;
+				lst = And(lst, k);
+				cur.clear();
+			}
+		}
+		else cur += c;
+		loweredKw += c;
+	}
+	//Last sub-token
+	if (cur != "" && cur != "*") {
+		lst = And(lst, Search(cur));
+	}
+	cerr << cur;
+	cerr << "lst's size: " << lst.size() << endl;
+	
+	auto ans = AhoCorasick(lst, {"\""+ loweredKw +"\""});
+	return ans[0];
+}
+

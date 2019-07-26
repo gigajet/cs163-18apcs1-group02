@@ -14,7 +14,8 @@ using namespace std::chrono;
 void test()
 {
 	string s = "D:\\Study\\HCMUS\\CS\\ProjectCS163\\cs163-18apcs1-group02-master\\cs163-18apcs1-group02-master\\Project\\";
-	string path = "Search Engine-Data\\";
+	//string path = "Search Engine-Data\\";
+	string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
 	Global* g = Global::GetInstance();
 
 	g->ReadData(path);
@@ -64,7 +65,7 @@ void testRPN() {
 	//Case 3
 	cout << "Case 3" << endl;
 	e.clear();
-	e.push_back("\"dangcongsan\""); 
+	e.push_back("\"dang cong san\""); 
 	e.push_back("and");
 	e.push_back("vietnam");
 	e.push_back("and");
@@ -91,9 +92,9 @@ void testRefineToken()
 }
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
-	/*int Count = 0;
+	int Count = 0;
 	{
-		string path = "Search Engine-Data\\";
+		string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
 		string listFile = path + "___index.txt";
 		ifstream fin;
 		fin.open(listFile);
@@ -105,42 +106,66 @@ void testAho() {
 			Count++;
 		}
 		fin.close();
-	}*/
-	cout << Global::GetInstance()->fileName.size();
+	}
+	cout << Count << endl;
 	set<int> s;
-	for (int i = 0; i < Global::GetInstance()->fileName.size(); ++i) s.insert(i);
+	for (int i = 0; i < Count; ++i) s.insert(i);
 	vector<Token> tokenList;
 
-	tokenList.push_back("the");
+	tokenList.push_back("\"De*uo*Su\"");
 
 	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-	vector<QueryAnswer> ttt = AhoCorasick(s, tokenList);
-
-	Top5Result(ttt[0], ConvertToRPN(tokenList));
-
-	//for (auto i : tttt) cout << endl << i;
+	AhoCorasick(s, tokenList);
 
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(t2 - t1).count();
 	cout << "Aho corasick run in: " << duration;
 }
 
+void testExactSearch() {
+	if (Global::GetInstance()->fileName.size() == 0)
+		test();
+	QueryAnswer ans = Exact("De Nhi Quoc Su");
+	for (auto i : ans)
+		cout << i << " ";
+	cout << endl;
+	
+	Global::GetInstance()->trie.Destructor();
+}
+
+void testTop5() {
+	if (Global::GetInstance()->fileName.size() == 0)
+		test();
+	QueryAnswer ans = Exact("De Nhi Quoc Su");
+	vector<int> top5 = Top5Result(ans, { "De Nhi Quoc Su" });
+	for (auto x : top5) cout << x << " ";
+	cout << endl;
+
+	Global::GetInstance()->trie.Destructor();
+}
+
 int main()
 {
 #ifdef TESTING_PHASE
-	high_resolution_clock::time_point t1 = high_resolution_clock::now();
-	test();
-	high_resolution_clock::time_point t2 = high_resolution_clock::now();
-	auto duration = duration_cast<milliseconds>(t2 - t1).count();
-	cout << "Read data run in: " << duration << endl;
-	
+
+
+	//test();
+
+	//cout << "Doc file run in: " << duration;
+
 	//testRPN();
-	testAho();
+	//testAho();
 	//testRefineToken(); //bug in calculateRPN case intitle
 	//testSearch();
-	Global::GetInstance()->trie.Destructor();
-	delete Global::GetInstance();
+	//testExactSearch();
+
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	testTop5();
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(t2 - t1).count();
+	cout << "DocFile+Exact+top5 run in: " << duration;
+	
 #else
 	//Do real thing
 #endif
