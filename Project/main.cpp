@@ -64,12 +64,12 @@ void testRPN() {
 	//Case 3
 	cout << "Case 3" << endl;
 	e.clear();
-	e.push_back("\"dangcongsan\"");
+	e.push_back("\"dangcongsan\""); 
 	e.push_back("and");
 	e.push_back("vietnam");
 	e.push_back("and");
 	e.push_back("quangvinh");
-	e.push_back("or");
+	e.push_back("intitle");
 	e.push_back("muonnam");
 	e = ConvertToRPN(e);
 	for (auto token : e)
@@ -78,7 +78,17 @@ void testRPN() {
 	CalculateRPN(e);
 	cout << endl;
 }
-
+void testRefineToken()
+{
+	string query = "\"dangcongsan\" and vietnam and quangvinh intitle:muonam";
+	Expression e = RefineToken(query);
+	e = ConvertToRPN(e);
+	for (auto token : e)
+		cout << token << " ";
+	cout << endl;
+	CalculateRPN(e);
+	cout << endl;
+}
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
 	int Count = 0;
@@ -114,12 +124,13 @@ void testAho() {
 int main()
 {
 #ifdef TESTING_PHASE
-	test();
-	//testRPN();
+	//test();
+	testRPN();
 	//testAho();
+	testRefineToken(); //bug in calculateRPN case intitle
+	//testSearch();
 #else
 	//Do real thing
-	
 #endif
 	return 0;
 }

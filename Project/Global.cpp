@@ -227,19 +227,19 @@ QueryAnswer Or(QueryAnswer a, QueryAnswer b)
 		b.insert(*it);
 	return b;
 }
-QueryAnswer Exclude(QueryAnswer a, QueryAnswer b)
+QueryAnswer Exclude(QueryAnswer a)
 {
 	QueryAnswer temp;
 	// nothing to exclude
-	if (a.empty() || (a.empty() && b.empty()))
-		return temp;
-	//a - 0 =a
-	else if (b.empty())
-		return a;
-	QueryAnswer intersectSet = And(a, b);
-	for ( QueryAnswer::iterator it=intersectSet.begin();it!=intersectSet.end();++it) // delete the commen elements between set a and b
+	Global *g = Global::GetInstance();
+	int size = g->fileName.size();
+	for (int i = 0; i < g->fileName.size(); ++i)
 	{
-		a.erase(*it);
+		temp.emplace(i);
 	}
-	return a;
+	for (set<int>::iterator it = a.begin(); it != a.end(); ++it)
+	{
+		temp.erase(*it);
+	}
+	return temp;
 }

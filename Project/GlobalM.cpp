@@ -5,7 +5,6 @@
 #define TESTING_PHASE
 
 using namespace std;
-
 //Return 0 if just a token, positive integer if operator. The higher integer is, the more precedence.
 int Precedence(Token token) {
 	if (token == "or") return 1;
@@ -33,9 +32,15 @@ Expression ConvertToRPN(Expression e) {
 		int pred = Precedence(token);
 		if (pred == 0) {//not an operator 
 			ans.push_back(token);
-			if (token[0] == '\"')
-				ans.push_back("exact");
-			else ans.push_back("search");
+
+			if (token[0] == '\"') {
+				if (op.empty() || (op.top()!="intitle") && (op.top()!="~"))
+					ans.push_back("exact");
+			}
+			else {
+				if (op.empty() || (op.top() != "intitle") && (op.top() != "~"))
+					ans.push_back("search");
+			}
 		}
 		else {
 			while (!op.empty()
@@ -111,7 +116,7 @@ QueryAnswer CalculateRPN(Expression rpn) {
 				if (token == "intitle") {
 					if (st.size() < 1) throw 1;
 					tmp1 = st.top(); st.pop();
-					Token k1 = get<Token>(tmp1);
+					Token k1 = get<Token>(tmp1); //problem with this line
 					//st.push(Exact(k1));
 
 					cerr << "Intitle call for: " << k1 << endl;
