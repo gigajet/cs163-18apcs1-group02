@@ -25,7 +25,7 @@ void test()
 
 	//for (int i : res) cout << g->fileName[i] << endl;
 
-	g->trie.Destructor();
+	//g->trie.Destructor();
 	return;
 }
 
@@ -91,9 +91,9 @@ void testRefineToken()
 }
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
-	int Count = 0;
+	/*int Count = 0;
 	{
-		string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
+		string path = "Search Engine-Data\\";
 		string listFile = path + "___index.txt";
 		ifstream fin;
 		fin.open(listFile);
@@ -105,16 +105,21 @@ void testAho() {
 			Count++;
 		}
 		fin.close();
-	}
+	}*/
+	cout << Global::GetInstance()->fileName.size();
 	set<int> s;
-	for (int i = 0; i < Count; ++i) s.insert(i);
+	for (int i = 0; i < Global::GetInstance()->fileName.size(); ++i) s.insert(i);
 	vector<Token> tokenList;
 
-	tokenList.push_back("\"De*Q*Su\"");
+	tokenList.push_back("the");
 
 	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-	AhoCorasick(s, tokenList);
+	vector<QueryAnswer> ttt = AhoCorasick(s, tokenList);
+
+	Top5Result(ttt[0], ConvertToRPN(tokenList));
+
+	//for (auto i : tttt) cout << endl << i;
 
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(t2 - t1).count();
@@ -124,11 +129,18 @@ void testAho() {
 int main()
 {
 #ifdef TESTING_PHASE
-	//test();
-	testRPN();
-	//testAho();
-	testRefineToken(); //bug in calculateRPN case intitle
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	test();
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(t2 - t1).count();
+	cout << "Read data run in: " << duration << endl;
+	
+	//testRPN();
+	testAho();
+	//testRefineToken(); //bug in calculateRPN case intitle
 	//testSearch();
+	Global::GetInstance()->trie.Destructor();
+	delete Global::GetInstance();
 #else
 	//Do real thing
 #endif
