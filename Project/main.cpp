@@ -19,11 +19,11 @@ void test()
 
 	g->ReadData(path);
 
-	string teststr = "live";
+	//string teststr = "live";
 
-	set<int> res = g->trie.Search(teststr, false);
+	//set<int> res = g->trie.Search(teststr, false);
 
-	for (int i : res) cout << g->fileName[i] << endl;
+	//for (int i : res) cout << g->fileName[i] << endl;
 
 	g->trie.Destructor();
 	return;
@@ -114,9 +114,9 @@ void testAho() {
 int main()
 {
 #ifdef TESTING_PHASE
-	//test();
+	test();
 	//testRPN();
-	testAho();
+	//testAho();
 #else
 	//Do real thing
 	

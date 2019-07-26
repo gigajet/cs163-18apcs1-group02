@@ -96,6 +96,21 @@ set<int> Trie::Search(string word, bool isInTitle)
 	return Search(root, word, isInTitle);
 }
 
+int Trie::GetN(string word)
+{
+	TrieNode* current = root;
+	set<int> result;
+	if (current == NULL) return 0;
+	for (auto i : word)
+	{
+		TrieNode* node = current->child[i];
+		if (node == NULL) return 0;
+		root = node;
+	}
+
+	return (current->isEndOfWord) ? current->fileIndex.size() : 0;
+}
+
 void Trie::Destructor()
 {
 	Destructor(root);

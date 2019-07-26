@@ -46,6 +46,7 @@ void Global::ReadData(string path)
 	{
 		//Trie temp;
 		//trie.push_back(temp);
+		int length = 0;
 		Count++;
 		//std::cout << filename << '\n';
 		//if (Count == 2) break;
@@ -71,6 +72,8 @@ void Global::ReadData(string path)
 					i = tolower(i);
 					if (('a' <= i && i <= 'z') || ('0' <= i && i <= '9'))
 						temp.push_back(i);
+					else if (i == '#' && temp.size() == 0)
+						temp.push_back(i);
 					else
 					{
 						if (temp.size() != 0)
@@ -79,16 +82,18 @@ void Global::ReadData(string path)
 							//cout << temp<< " " << filename << endl;
 							//trie.Insert(temp, true, index);
 							//line.push_back(temp);
+							oki.addToTF(temp, index);
+							length++;
 							temp.clear();
 						}
 					}
 				}
-				if (temp.size() != 0) trie.Insert(temp, true, index);
+				if (temp.size() != 0) trie.Insert(temp, true, index), length++, oki.addToTF(temp, index);
 				temp.clear();
 				break;
 			}
 		}
-		cout << temp << " " << filename << endl;
+		//cout << temp << " " << filename << endl;
 		//if (temp.size() != 0) trie.Insert(temp, true, index);
 			//trie.Insert(word, true, index);
 			/*if (word.length() != 0)
@@ -113,20 +118,32 @@ void Global::ReadData(string path)
 				i = tolower(i);
 				if (('a' <= i && i <= 'z') || ('0' <= i && i <= '9'))
 					temp.push_back(i);
+				else if (i == '#' && temp.size() == 0)
+					temp.push_back(i);
 				else //ky tu khac ngoai chu cai va digit
 				{
-					if (temp.size() == 0) continue;
-					//cout << temp << " " << filename << endl;
-					trie.Insert(temp, false, index);
-					temp.clear();
+					if (temp.size() != 0)
+					{
+						trie.Insert(temp, true, index);
+						//cout << temp<< " " << filename << endl;
+						//trie.Insert(temp, true, index);
+						//line.push_back(temp);
+						oki.addToTF(temp, index);
+						length++;
+						temp.clear();
+					}
 				}
 			}
-			if (temp.size() != 0) trie.Insert(temp, false, index);
+			if (temp.size() != 0) trie.Insert(temp, false, index), length++, oki.addToTF(temp, index);
 			temp.clear();
 		}
 		//cout << temp << " " << filename << endl;
-		if (temp.size() != 0) trie.Insert(temp, false, index);
+		if (temp.size() != 0) trie.Insert(temp, false, index), length++, oki.addToTF(temp, index);
 		temp.clear();
+		
+		//set to okapi table
+		oki.addToLengthTable(index, length);
+
 		//trie.push_back(temp);
 		//cout << "file " << fileName[fileName.size() - 1] << endl;
 		data.close();
@@ -167,7 +184,7 @@ void Global::ReadData(string path)
 	//}
 
 	//fclose(fin);
-
+	TotalDoc = Count;
 	cout << Count << endl;
 }
 
@@ -192,7 +209,9 @@ QueryAnswer And(QueryAnswer a, QueryAnswer b)
 		return temp;
 	//find common element in 2 set preRes and temp
 	QueryAnswer intersectSet;
-	set_intersection(a.begin(), a.end(), temp.begin(), b.end(),b.end(),inserter(intersectSet,intersectSet.begin()));
+	//set_intersection(a.begin(), a.end(), temp.begin(), b.end(),b.end(),inserter(intersectSet,intersectSet.begin()));
+	//Fix
+	set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(intersectSet, intersectSet.begin()));
 	return intersectSet;
 }
 QueryAnswer Or(QueryAnswer a, QueryAnswer b)
