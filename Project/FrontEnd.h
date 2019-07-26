@@ -17,7 +17,6 @@ using namespace std;
 typedef string Token;
 typedef vector<Token> Expression;
 
-
 void gotoxy(int x, int y);
 void color(int x);
 void paintFrame(int x, int y, int height, int width);
