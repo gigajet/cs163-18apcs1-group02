@@ -190,7 +190,10 @@ Token showLogo() {
 	color(11);
 	cout << "Group 02 project"; color(7);
 	gotoxy(3, 23); cout << "Search >>";
-	Token keyword; cin >> keyword; return keyword;
+	Token keyword; //cin >> keyword; return keyword;
+	//cin.ignore(100, '\n');
+	getline(cin, keyword);
+	return keyword;
 }
 
 void colorText(int colour, int textColor, string text, int x, int y, int width)
@@ -287,20 +290,46 @@ bool showResultandSearchdemo(Token &keyword, Expression path,Expression history)
 void showResultandSearch(Token keyword) {
 	system("cls");
 	fflush(stdin);
+
+	Expression e = RefineToken(keyword);
+
+	for (auto i : e)
+		cout << i << endl;
+	cout << "========================" << endl;
+
+	e = ConvertToRPN(e);
+
+	for (auto i : e)
+		cout << i << endl;
+
+	system("pause");
+
+
 	Expression path, history;
 	Global* g = Global::GetInstance();
 	history.push_back(keyword);
-	set<int> res = g->trie.Search(keyword, false);
-	vector<int>a = Top5Result(res, { keyword });
+	//set<int> res = g->trie.Search(keyword, false);
+
+	QueryAnswer res = CalculateRPN(e);
+
+	vector<int>a = Top5Result(res, e);
 	for (int i : a) path.push_back(g->fileName[i]);
 	bool keepsearching = showResultandSearchdemo(keyword, path,history);
 	while (keepsearching)
 	{
 		system("cls");
 		Expression temp;
-		res = g->trie.Search(keyword, false);
-		vector<int>b = Top5Result(res, {keyword});
+		/*res = g->trie.Search(keyword, false);
+		vector<int>b = Top5Result(res, {keyword});*/
+		//for (int i : b) temp.push_back(g->fileName[i]);
+
+		Expression e = RefineToken(keyword);
+		e = ConvertToRPN(e);
+
+		res = CalculateRPN(e);
+		vector<int> b = Top5Result(res, e);
 		for (int i : b) temp.push_back(g->fileName[i]);
+
 		if (res.size() == 0)
 		{
 			gotoxy(7, 7);
@@ -309,6 +338,6 @@ void showResultandSearch(Token keyword) {
 			cout << "You might want to check your spelling or try something else";
 			//find another word
 		}
-		keepsearching = showResultandSearchdemo(keyword, temp,history);
+		keepsearching = showResultandSearchdemo(keyword, temp, history);
 	}
 }

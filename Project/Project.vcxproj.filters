@@ -24,6 +24,9 @@
     <ClInclude Include="Ranking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FrontEnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Trie.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GlobalV.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrontEnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
