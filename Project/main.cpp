@@ -2,9 +2,6 @@
 #include <chrono>
 
 using namespace std;
-using namespace std::chrono;
-
-
 //#define TESTING_PHASE
 
 #ifdef TESTING_PHASE
@@ -13,9 +10,8 @@ using namespace std::chrono;
 
 void test()
 {
-	string s = "D:\\Study\\HCMUS\\CS\\ProjectCS163\\cs163-18apcs1-group02-master\\cs163-18apcs1-group02-master\\Project\\";
-	//string path = "Search Engine-Data\\";
-	string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
+	string s = "C:\\Users\\Admin\\source\\repos\\cs163-18apcs1-group02-master\\Search Engine-Data\\";
+	string path = "Search Engine-Data\\";
 	Global* g = Global::GetInstance();
 
 	g->ReadData(s);
@@ -29,7 +25,6 @@ void test()
 	//g->trie.Destructor();
 	string a = showLogo();
 	showResultandSearch(a);
-
 	Global::GetInstance()->trie.Destructor();
 	delete Global::GetInstance();
 	return;
@@ -97,7 +92,7 @@ void testRefineToken()
 }
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
-	int Count = 0;
+	/*int Count = 0;
 	{
 		string path = "Search Engine-Data\\";
 		string listFile = path + "___index.txt";
@@ -111,8 +106,8 @@ void testAho() {
 			Count++;
 		}
 		fin.close();
+	}*/
 	cout << Global::GetInstance()->fileName.size();
-	}
 	set<int> s;
 	for (int i = 0; i < Global::GetInstance()->fileName.size(); ++i) s.insert(i);
 	vector<Token> tokenList;
