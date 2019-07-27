@@ -124,7 +124,13 @@ QueryAnswer CalculateRPN(Expression rpn) {
 					st.push(QueryAnswer());
 				}
 				//if (token == "..") ;
-				//if (token == "~") ;
+				if (token == "~")
+				{
+					if (st.size() < 1) throw 1;
+					tmp1 = st.top(); st.pop();
+					Token k1 = get<Token>(tmp1);
+					st.push(getSynonymSet(k1));
+				}
 			}
 			else { //a token
 				st.push(token);

@@ -103,3 +103,79 @@ vector<string> RefineToken(string Query)
 	}
 	return finalExpression;
 }
+
+bool isCompletelyMatched(string line, string query, int pos)  // Ex: set is not completely matched with setting , set is completely matched with set
+{
+	if (pos == string::npos) return false;
+	if (pos > 0 && pos < line.size() - 1)
+	{
+		if (line[pos - 1] == ',' && line[query.size() + pos] == ',')
+			return true;
+	}
+	else if (pos == 0)
+	{
+		if (line[query.size()] == ',')
+			return true;
+	}
+	else if (pos + query.size() >= line.size())
+	{
+		if (line[pos] == ',')
+			return true;
+	}
+	return false;
+}
+vector<string> getSynonymList(string query)
+{
+	vector<string>temp;
+	fstream fin;
+	fin.open("synonym.txt");
+	string line;
+	if (fin.is_open())
+	{
+		while (!fin.eof())
+		{
+			getline(fin, line);
+			if (isCompletelyMatched(line, query, line.find(query, 0)) == true)
+			{
+				string s;
+				string::iterator it = line.begin();
+				while (it != line.end())
+				{
+
+					if (*it != ',')
+						s.push_back(*it);
+					else if (*it == ',')
+					{
+						temp.push_back(s);
+						s.clear();
+					}
+					++it;
+					if (it == line.end())
+					{
+						if (s.empty() == false)
+							temp.push_back(s);
+						break;
+					}
+				}
+				break;
+			}
+		}
+	}
+	fin.close();
+	return temp;
+}
+QueryAnswer getSynonymSet(Token token)
+{
+	vector<string> synonymList = getSynonymList(token);
+	QueryAnswer currentSet;
+	if (synonymList.empty())
+		return currentSet;
+	else
+	{
+		for (int i = 0; i < synonymList.size(); ++i)
+		{
+			currentSet=Or(currentSet, Search(synonymList[i]));
+		}
+	}
+	return currentSet;
+}

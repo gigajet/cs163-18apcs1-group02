@@ -347,15 +347,21 @@ bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>&
 	}
 }
 void showResultandSearch(Token keyword) {
-	//Giao diện Search
-	Global* g = Global::GetInstance();
-	vector<string> path, history;
+	//system("cls");
 	//fflush(stdin);
-	
-	set<int> res = g->trie.Search(keyword, false);
 
-	vector<int>a = Top5Result(res, { keyword });
+	Expression e = RefineToken(keyword);
 
+	e = ConvertToRPN(e);
+
+	vector<string> path, history;
+	Global* g = Global::GetInstance();
+	history.push_back(keyword);
+	//set<int> res = g->trie.Search(keyword, false);
+
+	QueryAnswer res = CalculateRPN(e);
+
+	vector<int>a = Top5Result(res, e);
 	for (int i : a) path.push_back(g->fileName[i]);
 
 	bool keepsearching = showResultandSearchdemo(keyword, path,history);
@@ -364,14 +370,27 @@ void showResultandSearch(Token keyword) {
 	{
 		system("cls");
 
-		path.clear();
+		Expression temp;
+		/*res = g->trie.Search(keyword, false);
+		vector<int>b = Top5Result(res, {keyword});*/
+		//for (int i : b) temp.push_back(g->fileName[i]);
 
-		res = g->trie.Search(keyword, false);
+    path.clear();
+		Expression e = RefineToken(keyword);
+		e = ConvertToRPN(e);
 
-		vector<int>b = Top5Result(res, {keyword});
-
+		res = CalculateRPN(e);
+		vector<int> b = Top5Result(res, e);
 		for (int i : b) path.push_back(g->fileName[i]);
 
+		if (res.size() == 0)
+		{
+			gotoxy(7, 7);
+			cout << "Oops. There're no result for: "; color(11); cout << keyword;
+			gotoxy(7, 8);
+			cout << "You might want to check your spelling or try something else";
+			//find another word
+		}
 		keepsearching = showResultandSearchdemo(keyword, path ,history);
 	}
 	

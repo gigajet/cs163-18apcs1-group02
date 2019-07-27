@@ -46,6 +46,7 @@ int Trie::CountPrefix(TrieNode* root, string word)
 
 set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 {
+	//cout << "test" << word << endl;
 	set<int> result;
 	if (root == NULL) return result;
 	TrieNode* current = root;
@@ -63,6 +64,7 @@ set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 	{
 		TrieNode* u = q.front();
 		q.pop();
+		//if (u == NULL) continue;
 		if (u->isEndOfWord)
 		{
 			if (isInTitle)
@@ -72,7 +74,8 @@ set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 		}
 		for (auto i : u->child)
 		{
-			q.push(i.second);
+			if (i.second != NULL)
+				q.push(i.second);
 		}
 	}
 
