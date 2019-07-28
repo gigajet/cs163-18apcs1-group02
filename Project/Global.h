@@ -28,8 +28,8 @@ public:
 	int TotalDoc = 0;
 	OkapiBM25 oki;
 	Trie trie;
-	vector<vector<long long> > numberList; //numberList[i]: list of number in file i of fileName
-	vector<vector<long long> > priceList; //priceList[i]: list of prices, "$" discarded
+	vector<vector<string> > numberList; //numberList[i]: list of number in file i of fileName
+	vector<vector<string> > priceList; //priceList[i]: list of prices, "$" discarded
 	vector<string> fileName;
 	void ReadData(string path);
 	static Global* GetInstance();
@@ -66,6 +66,7 @@ Token NumberCommaForm(Token numToken);
 Token PriceCommaForm(Token priceToken);
 bool hasNumberPrefix(string token);
 bool hasPricePrefix(string token);
+bool cmpNumber(string a, string b);
 
 /*
   Job:
@@ -89,5 +90,7 @@ double calScore(double n, double f, double N, double dl, double avg);
 vector<int> Top5Result(QueryAnswer qa, Expression e);
 
 set<int> GetHighlightInfo(int globalIndex, Expression rpn, string filename);
+
+string getNumber(string word);
 
 #endif // !GLOBAL_H_

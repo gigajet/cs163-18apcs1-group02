@@ -464,11 +464,10 @@ QueryAnswer PriceRange(Token a, Token b) {
 	Global *g = Global::GetInstance();
 	QueryAnswer ans;
 	a.erase(0, 1); b.erase(0, 1);
-	long long A = stoll(a), B = stoll(b);
-	if (A > B) swap(A, B);
+	if (cmpNumber(b,a)) swap(a, b);
 	for (int i = 0; i < (int)g->fileName.size(); ++i) {
-		if (upper_bound(g->priceList[i].begin(), g->priceList[i].end(), B) >
-			lower_bound(g->priceList[i].begin(), g->priceList[i].end(), A)) {
+		if (upper_bound(g->priceList[i].begin(), g->priceList[i].end(), b) >
+			lower_bound(g->priceList[i].begin(), g->priceList[i].end(), a)) {
 			ans.insert(i);
 		}
 	}
@@ -477,11 +476,12 @@ QueryAnswer PriceRange(Token a, Token b) {
 QueryAnswer NumberRange(Token a, Token b) {
 	Global *g = Global::GetInstance();
 	QueryAnswer ans;
-	long long A = stoll(a), B = stoll(b);
-	if (A > B) swap(A, B);
+	a.erase(0, 1); b.erase(0, 1);
+	//if (A > B) swap(A, B);
+	if (cmpNumber(b, a)) swap(a, b);
 	for (int i = 0; i < (int)g->fileName.size(); ++i) {
-		if (upper_bound(g->numberList[i].begin(), g->numberList[i].end(), B) >
-			lower_bound(g->numberList[i].begin(), g->numberList[i].end(), A)) {
+		if (upper_bound(g->numberList[i].begin(), g->numberList[i].end(), b) >
+			lower_bound(g->numberList[i].begin(), g->numberList[i].end(), a)) {
 			ans.insert(i);
 		}
 	}
@@ -755,24 +755,24 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 			if (token == "..") {
 				Token tmp1 = st.top(); st.pop();
 				Token tmp2 = st.top(); st.pop();
-				if (stoll(tmp1) > stoll(tmp2)) swap(tmp1, tmp2);
+				if (cmpNumber(tmp2, tmp1)) swap(tmp1, tmp2);
 				Global *g = Global::GetInstance();
 				if (isNumber(tmp1)) {
-					for (auto it = lower_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), stoll(tmp1));
-						it != upper_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), stoll(tmp2));
+					for (auto it = lower_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), tmp1, cmpNumber);
+						it != upper_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), tmp2, cmpNumber);
 						it++) {
 						//cerr << *it << endl;
-						v.push_back(to_string(*it));
-						v.push_back(NumberCommaForm(to_string(*it)));
+						v.push_back(*it);
+						v.push_back(NumberCommaForm(*it));
 					}
 				}
 				else { //Price
-					for (auto it = lower_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), stoll(tmp1));
-						it != upper_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), stoll(tmp2));
+					for (auto it = lower_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), tmp1, cmpNumber);
+						it != upper_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), tmp2, cmpNumber);
 						it++) {
 						//cerr << *it << endl;
-						v.push_back("$"+to_string(*it));
-						v.push_back("$"+NumberCommaForm(to_string(*it)));
+						v.push_back("$"+*it);
+						v.push_back("$"+NumberCommaForm(*it));
 					}
 				}
 			}
@@ -812,4 +812,21 @@ Token PriceCommaForm(Token priceToken) {
 	priceToken.erase(0, 1);
 	Token ans = NumberCommaForm(priceToken);
 	return "$" + ans;
+}
+
+string getNumber(string word) {
+	string ans("");
+	for (int i = 0; i < (int)word.length(); ++i)
+		if (isdigit(word[i]))
+			ans += word[i];
+		else break;
+	while (!ans.empty() && ans[0] == '0') ans.erase(0, 1);
+	if (ans.empty()) ans += '0';
+	return ans;
+}
+
+bool cmpNumber(string a, string b) {
+	if (a.length() < b.length()) return 1;
+	if (a.length() > b.length()) return 0;
+	return a < b;
 }
