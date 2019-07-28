@@ -137,19 +137,6 @@ void testExactSearch() {
 	Global::GetInstance()->trie.Destructor();
 }
 
-void testTop5() {
-	if (Global::GetInstance()->fileName.size() == 0)
-		test();
-	QueryAnswer ans = Search("vietnam");
-	cout << "Search result: " << ans.size() << endl;
-	vector<int> top5 = Top5Result(ans, { "vietnam" });
-	cout << "Top5: ";
-	for (auto x : top5) cout << x << " ";
-	cout << endl;
-
-	Global::GetInstance()->trie.Destructor();
-}
-
 #ifdef TESTING_PHASE
 void DetailFile_RW(int globalIndex, Expression rpn);
 #endif
@@ -180,9 +167,25 @@ void SearchDebug() {
 		for (auto i : e) cout << i << " "; cout << endl;
 		QueryAnswer ans = CalculateRPN(e);
 		cout << "File match: ";
-		for (auto i : ans) cout << i << " "; cout << endl;
+		for (auto i : ans) cout << i << " " << Global::GetInstance()->fileName[i] << endl; cout << endl;
+		cout << "Score: ";
+		vector<int> k = Top5Result(ans, e);
+		for (int x : k) cout << x << " "; cout << endl;
 		cout << "======" << endl;
 	} while (1);
+}
+
+void testTop5() {
+	if (Global::GetInstance()->fileName.size() == 0)
+		test();
+	QueryAnswer ans = Search("5000");
+	cout << "Search result: " << ans.size() << endl;
+	vector<int> top5 = Top5Result(ans, { "vietnam" });
+	cout << "Top5: ";
+	for (auto x : top5) cout << x << " ";
+	cout << endl;
+
+	Global::GetInstance()->trie.Destructor();
 }
 
 int main()
@@ -256,7 +259,6 @@ int main()
 	g->ReadData(path);
 
 	//SearchDebug();
-
 	string a = showLogo();
 	showResultandSearch(a);
 
