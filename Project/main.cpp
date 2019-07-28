@@ -1,10 +1,11 @@
 #include"FrontEnd.h"
 #include <chrono>
+#include <filesystem>
 
 using namespace std;
 using namespace std::chrono;
 
-#define TESTING_PHASE
+//#define TESTING_PHASE
 
 void test()
 {
@@ -153,6 +154,37 @@ void testTop5() {
 void DetailFile_RW(int globalIndex, Expression rpn);
 #endif
 
+//Make ___index.txt at that directory
+void MakeIndex(string path) {
+	vector<string> v;
+	for (auto &p : filesystem::directory_iterator(path)) {
+		v.push_back(p.path().filename().string());
+	}
+	ofstream fout; fout.open(path+"___index.txt");
+	for (auto x : v) {
+		fout << x << endl;
+	}
+	fout.close();
+}
+
+void SearchDebug() {
+	do {
+		string s;
+		cout << "Query: "; getline(cin, s);
+		if (s == "eXiT") return;
+		Expression e = RefineToken(s);
+		cout << "Refine token: ";
+		for (auto i : e) cout << i << " "; cout << endl;
+		e = ConvertToRPN(e);
+		cout << "RPN Exp: ";
+		for (auto i : e) cout << i << " "; cout << endl;
+		QueryAnswer ans = CalculateRPN(e);
+		cout << "File match: ";
+		for (auto i : ans) cout << i << " "; cout << endl;
+		cout << "======" << endl;
+	} while (1);
+}
+
 int main()
 {
 #ifdef TESTING_PHASE
@@ -194,7 +226,7 @@ int main()
 	DetailFile_RW(0, e);
 	*/
 
-	 //Test highlight case 2
+	/* //Test highlight case 2
 	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine-Data\\003.txt");
 	g->numberList.push_back({});
 	g->numberList[0].insert(g->numberList[0].end(), {70});
@@ -202,9 +234,8 @@ int main()
 	e.insert(e.end(), { "70" });
 	e = ConvertToRPN(e);
 	DetailFile_RW(0, e);
+	*/
 	
-
-
 	/* //Test number
 	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine - Data\\Data1254.txt");
 	g->numberList.push_back({});
@@ -218,9 +249,13 @@ int main()
 #else
 	//Do real thing
 
-	string path = "Search Engine-Data\\";
+	//string path = "Search Engine-Data\\";
+	string path = "d:\\Minh\\clz\\data_small\\";
+	//MakeIndex(path);
 	Global* g = Global::GetInstance();
 	g->ReadData(path);
+
+	//SearchDebug();
 
 	string a = showLogo();
 	showResultandSearch(a);

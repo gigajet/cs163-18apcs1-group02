@@ -363,7 +363,7 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 					if (additionalCheck[id] == -1)
 					{
 						int len = (int)processedToken[id].length();
-						if (offSet - len >= 0) {
+						if (offSet - len - 1>= 0) {
 							if (buffer[(int)buffer.length() - len - 1] != ' '
 								&& buffer[(int)buffer.length() - len - 1] != '\n')
 								continue;
@@ -448,6 +448,16 @@ bool isPrice(string token) {
 	if (token[0] != '$') return false;
 	token.erase(0, 1); if (token.length() == 0) return false;
 	return isNumber(token);
+}
+bool hasNumberPrefix(string token) {
+	if (token.length() == 0) return false;
+	return isdigit(token[0]);
+}
+bool hasPricePrefix(string token) {
+	if (token.length() < 1) return false;
+	if (token[0] != '$') return false;
+	token.erase(0, 1);
+	return hasNumberPrefix(token);
 }
 
 QueryAnswer PriceRange(Token a, Token b) {
@@ -673,7 +683,7 @@ set<int> GetHighlightPosition(string filename, vector<Token> tokenList) {
 				if (additionalCheck[id] == -1)
 				{
 					int len = (int)processedToken[id].length();
-					if (offSet - len >= 0) {
+					if (offSet - len - 1 >= 0) {
 						if (buffer[(int)buffer.length() - len - 1] != ' '
 							&& buffer[(int)buffer.length() - len - 1] != '\n')
 							continue;
@@ -732,7 +742,12 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 	for (Token token : rpn) {
 		if (Precedence(token) > 0) {
 			if (token == searchOp) {
-				v.push_back(st.top()); st.pop();
+				Token tmp1 = st.top(); st.pop();
+				v.push_back(tmp1);
+				if (isNumber(tmp1))
+					v.push_back(NumberCommaForm(tmp1));
+				if (isPrice(tmp1))
+					v.push_back(PriceCommaForm(tmp1));
 			}
 			if (token == exactOp) {
 				v.push_back("\""+st.top()+"\""); st.pop();
@@ -740,14 +755,15 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 			if (token == "..") {
 				Token tmp1 = st.top(); st.pop();
 				Token tmp2 = st.top(); st.pop();
+				if (stoll(tmp1) > stoll(tmp2)) swap(tmp1, tmp2);
 				Global *g = Global::GetInstance();
 				if (isNumber(tmp1)) {
-					if (stoll(tmp1) > stoll(tmp2)) swap(tmp1, tmp2);
 					for (auto it = lower_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), stoll(tmp1));
 						it != upper_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), stoll(tmp2));
 						it++) {
 						//cerr << *it << endl;
 						v.push_back(to_string(*it));
+						v.push_back(NumberCommaForm(to_string(*it)));
 					}
 				}
 				else { //Price
@@ -755,7 +771,8 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 						it != upper_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), stoll(tmp2));
 						it++) {
 						//cerr << *it << endl;
-						v.push_back(to_string(*it));
+						v.push_back("$"+to_string(*it));
+						v.push_back("$"+NumberCommaForm(to_string(*it)));
 					}
 				}
 			}
@@ -776,4 +793,23 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 set<int> GetHighlightInfo(int globalIndex, Expression rpn, string filename) {
 	vector<Token> v = GetHighlightToken(globalIndex, rpn);
 	return GetHighlightPosition(filename, v);
+}
+
+//"5000000" -> "5,000,000"
+Token NumberCommaForm(Token numToken) {
+	string ans(""); int count = 0;
+	for (int i = (int)numToken.length() - 1; i >= 0; --i) {
+		ans += numToken[i]; count++;
+		if (count % 3 == 0) ans += ',';
+	}
+	while (!ans.empty() && ans.back() == ',') ans.pop_back();
+	reverse(ans.begin(), ans.end());
+	return ans;
+}
+
+//"$5000" -> "$5,000"
+Token PriceCommaForm(Token priceToken) {
+	priceToken.erase(0, 1);
+	Token ans = NumberCommaForm(priceToken);
+	return "$" + ans;
 }

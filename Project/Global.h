@@ -62,6 +62,10 @@ QueryAnswer NumberRange(Token a, Token b);
 
 bool isNumber(string token);
 bool isPrice(string token);
+Token NumberCommaForm(Token numToken);
+Token PriceCommaForm(Token priceToken);
+bool hasNumberPrefix(string token);
+bool hasPricePrefix(string token);
 
 /*
   Job:
