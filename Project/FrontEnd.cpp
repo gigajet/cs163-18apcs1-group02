@@ -239,6 +239,39 @@ void DetailFile(int fileindex,vector<string> path)//hiện file chi tiết
 	fflush(stdin);
 	system("cls");
 }
+void DetailFile_RW(int globalIndex, Expression rpn) {
+	Global *g = Global::GetInstance();
+	set<int> highlightInfo = GetHighlightInfo(globalIndex, rpn, g->fileName[globalIndex]);
+	system("cls");
+	gotoxy(2, 1);
+	ifstream fin; fin.open(g->fileName[globalIndex]);
+	if (!fin.is_open()) {
+		cerr << "Dit me may! Detail file mo de'o duoc." << endl;
+		cerr << g->fileName[globalIndex] << endl;
+	}
+	else {
+		char c; int Count = 0;
+		while (fin.get(c)) {
+			Count++;
+			if (highlightInfo.count(Count) != 0) { //highlight this character
+				color(0xe); //14
+			}
+			else {
+				color(7);
+			}
+			cout << c;
+		}
+		fin.close();
+	}
+	gotoxy(0, 0); cout << "Want to leave? Press 0:";
+	char a = _getch();
+	while (a != '0') {
+		gotoxy(24, 0);
+		a = _getch();
+	}
+	fflush(stdin);
+	system("cls");
+}
 void Review5file(vector<string> path) {
 	for (int i = 0; i < path.size(); i++)
 	{
@@ -271,7 +304,7 @@ void Review5file(vector<string> path) {
 		fin.close();
 	}
 }
-bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>& history) {
+bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>& history, vector<int> globalIndex) {
 	//Show result
 	fflush(stdin);
 	system("cls");
@@ -310,7 +343,8 @@ bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>&
 			while (ch != 9 && ch != 27) {
 				if (ch >= 48 && ch <= 47+path.size()) {//di chuyển đến 1 file để đọc chi tiết
 					int fileindex = int(ch) - 48;
-						DetailFile(fileindex, path);
+						//DetailFile(fileindex, path);
+					DetailFile_RW(globalIndex[fileindex], ConvertToRPN(RefineToken(keyword)));
 						Review5file(path);
 						color(10);
 					gotoxy(5, 3); cout << "Press tab to search more keywords";
@@ -364,7 +398,7 @@ void showResultandSearch(Token keyword) {
 	vector<int>a = Top5Result(res, e);
 	for (int i : a) path.push_back(g->fileName[i]);
 
-	bool keepsearching = showResultandSearchdemo(keyword, path,history);
+	bool keepsearching = showResultandSearchdemo(keyword, path,history, a);
 
 	while (keepsearching)
 	{
@@ -391,7 +425,7 @@ void showResultandSearch(Token keyword) {
 			cout << "You might want to check your spelling or try something else";
 			//find another word
 		}
-		keepsearching = showResultandSearchdemo(keyword, path ,history);
+		keepsearching = showResultandSearchdemo(keyword, path ,history, b);
 	}
 	
 }

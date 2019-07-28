@@ -19,9 +19,11 @@ bool isOperation(string s, vector<string> operations)
 	}
 	return false;
 }
+
+
 vector<string> RefineToken(string Query)
 {
-	vector<string> operations = { "and","or","-","intitle","exact","~" };
+	vector<string> operations = { "and","or","-","intitle","~" };
 	string delimeter = " ,.;:";
 	vector<string> expression;
 	string temp;
@@ -61,26 +63,49 @@ vector<string> RefineToken(string Query)
 					temp.clear();
 				}
 			}
-
 			else
 			{
 				temp.push_back(tolower(*it)); // normal case,*it is not operation,just add *it to temp
 			}
-
 		}
 		else  // case *it is delim
 		{
 			if (!temp.empty())
 			{
+
 				if (isFirstDoubleQuotation == false)
 				{
-					expression.emplace_back(temp);
-					temp.clear();
+					if (*it == '.')
+					{
+
+						if (it + 1 != Query.end() && it + 2 != Query.end())
+						{
+							if (*(it + 1) == '.' && *(it + 2) == '$' && temp[0] == '$')
+							{
+								bool flag = true;
+								// check if  every character after $ in temp are digit
+								for (string::iterator i = temp.begin() + 1; i != temp.end(); ++i)
+									if (!isdigit(*i))
+									{
+										flag = false;
+										break;
+									}
+								if (flag == true)
+								{
+									temp.push_back('.');
+									temp.push_back('.');
+								}
+							}
+						}
+					}
+					else {
+						expression.emplace_back(temp);
+						temp.clear();
+					}
+					
 				}
 				else temp.push_back(tolower(*it));
-
 			}
-
 		}
 		++it;
 		//add the last word to expression
@@ -95,11 +120,154 @@ vector<string> RefineToken(string Query)
 	//{"abc", "and", "xyz", "or", "def", "intitle", "you", "~", "haha", "123"} => {"abc","and","xyz","or","def","intitle","you","~","haha","or","123"}
 
 	vector<string> finalExpression;
-	for (int i = 0; i < expression.size(); ++i)
+	
+	int size = expression.size();
+	for (int i = 0; i < size; ++i)
 	{
-		finalExpression.emplace_back(expression[i]);
-		if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false)
-			finalExpression.emplace_back("or");// case no operation between two word 
+		if(expression[i][0]=='$')
+		{
+			string s = expression[i];
+			int pos = s.find("..");
+			bool flag = true;
+			if (pos != string::npos)
+			{
+				
+				string t1; // contain $123
+				string t2; // contain ..
+				string t3; // contain $234
+				for (string::iterator it = s.begin();it!= s.begin()+pos; ++it)
+				{
+					if (isdigit(*it) == false)
+					{
+						if (*it != '$')
+						{
+							flag = false;
+							break;
+						}
+					}
+					t1.push_back(*it);
+				}
+				for (string::iterator it = s.begin()+pos+2; it != s.end(); ++it)
+				{
+					if (isdigit(*it) == false)
+					{
+						if (*it != '$')
+						{
+							flag = false;
+							break;
+						}
+					}
+					t3.push_back(*it);
+				}
+				t2.append("..");
+				if (flag == true)
+				{
+					
+					finalExpression.push_back(t1);
+					finalExpression.push_back(t2);
+					finalExpression.push_back(t3);	
+
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false)
+					{
+						finalExpression.emplace_back("or");// case no operation between two word 
+					}
+				}
+				else if (flag == false)
+				{
+					finalExpression.emplace_back(expression[i]);
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations)==false && isOperation(expression[i], operations) == false)
+						finalExpression.emplace_back("or");// case no operation between two word 
+				}
+			}
+			else
+			{
+				finalExpression.emplace_back(expression[i]);
+				if (i < expression.size() - 1 && isOperation(expression[i + 1], operations)==false && isOperation(expression[i], operations) == false)
+					finalExpression.emplace_back("or");// case no operation between two word 
+			}
+			
+		}
+		else
+		{
+			finalExpression.emplace_back(expression[i]);                                            
+			if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false  && isOperation(expression[i], operations) == false)
+				finalExpression.emplace_back("or");// case no operation between two word 
+		}
 	}
 	return finalExpression;
+}
+bool isCompletelyMatched(string line, string query, int pos)  // Ex: set is not completely matched with setting , set is completely matched with set
+{
+	if (pos == string::npos) return false;
+	if (pos > 0 && pos < line.size() - 1)
+	{
+		if (line[pos - 1] == ',' && line[query.size() + pos] == ',')
+			return true;
+	}
+	else if (pos == 0)
+	{
+		if (line[query.size()] == ',')
+			return true;
+	}
+	else if (pos + query.size() >= line.size())
+	{
+		if (line[pos] == ',')
+			return true;
+	}
+	return false;
+}
+vector<string> getSynonymList(string query)
+{
+	vector<string>temp;
+	fstream fin;
+	fin.open("synonym.txt");
+	string line;
+	if (fin.is_open())
+	{
+		while (!fin.eof())
+		{
+			getline(fin, line);
+			if (isCompletelyMatched(line, query, line.find(query, 0)) == true)
+			{
+				string s;
+				string::iterator it = line.begin();
+				while (it != line.end())
+				{
+
+					if (*it != ',')
+						s.push_back(*it);
+					else if (*it == ',')
+					{
+						temp.push_back(s);
+						s.clear();
+					}
+					++it;
+					if (it == line.end())
+					{
+						if (s.empty() == false)
+							temp.push_back(s);
+						break;
+					}
+				}
+				break;
+			}
+		}
+	}
+	fin.close();
+	return temp;
+}
+QueryAnswer getSynonymSet(Token token)
+{
+	vector<string> synonymList = getSynonymList(token);
+	QueryAnswer currentSet;
+	if (synonymList.empty())
+		return currentSet;
+	else
+	{
+		for (int i = 0; i < synonymList.size(); ++i)
+		{
+			currentSet=Or(currentSet, Search(synonymList[i]));
+		}
+	}
+	return currentSet;
 }

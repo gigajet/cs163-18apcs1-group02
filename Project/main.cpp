@@ -2,11 +2,9 @@
 #include <chrono>
 
 using namespace std;
-//#define TESTING_PHASE
-
-#ifdef TESTING_PHASE
 using namespace std::chrono;
-#endif
+
+#define TESTING_PHASE
 
 void test()
 {
@@ -151,9 +149,14 @@ void testTop5() {
 	Global::GetInstance()->trie.Destructor();
 }
 
+#ifdef TESTING_PHASE
+void DetailFile_RW(int globalIndex, Expression rpn);
+#endif
+
 int main()
 {
 #ifdef TESTING_PHASE
+	Global *g = Global::GetInstance();
 	//test();
 
 	//cout << "Doc file run in: " << duration;
@@ -164,6 +167,7 @@ int main()
 	//testSearch();
 	//testExactSearch();
 
+	/*
 	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 	testTop5();
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
@@ -172,6 +176,45 @@ int main()
 
 	Global::GetInstance()->trie.Destructor();
 	delete Global::GetInstance();
+	*/
+
+	/*
+	string kw = "40..50";
+	Expression e = RefineToken(kw);
+	for (auto x : e) cout << x << endl;
+	*/
+	
+	/* //Test highlight
+	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine-Data\\Data1254.txt");
+	g->numberList.push_back({});
+	g->numberList[0].insert(g->numberList[0].end(), { 14, 18, 68, 79, 1992, 2010, 2013 });
+	Expression e;
+	e.insert(e.end(), { "14", "..", "2013"});
+	e = ConvertToRPN(e);
+	DetailFile_RW(0, e);
+	*/
+
+	 //Test highlight case 2
+	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine-Data\\003.txt");
+	g->numberList.push_back({});
+	g->numberList[0].insert(g->numberList[0].end(), {70});
+	Expression e;
+	e.insert(e.end(), { "70" });
+	e = ConvertToRPN(e);
+	DetailFile_RW(0, e);
+	
+
+
+	/* //Test number
+	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine - Data\\Data1254.txt");
+	g->numberList.push_back({});
+	g->numberList[0].insert(g->numberList[0].end(), {14, 18, 68, 79, 1992, 2010, 2013});
+	QueryAnswer ans = NumberRange("69", "78");
+	for (auto i : ans) cout << i << " "; cout << endl;
+	cout << "Total: " << ans.size() << " files" << endl;
+	cout << endl;
+	*/
+
 #else
 	//Do real thing
 
