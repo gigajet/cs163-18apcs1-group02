@@ -28,6 +28,8 @@ public:
 	int TotalDoc = 0;
 	OkapiBM25 oki;
 	Trie trie;
+	vector<vector<long long> > numberList; //numberList[i]: list of number in file i of fileName
+	vector<vector<long long> > priceList; //priceList[i]: list of prices, "$" discarded
 	vector<string> fileName;
 	void ReadData(string path);
 	static Global* GetInstance();
@@ -55,6 +57,11 @@ QueryAnswer Exclude(QueryAnswer a);
 QueryAnswer Search(Token keyword);
 QueryAnswer Exact(Token keyword);
 QueryAnswer InTitle(Token keyword);
+QueryAnswer PriceRange(Token a, Token b);
+QueryAnswer NumberRange(Token a, Token b);
+
+bool isNumber(string token);
+bool isPrice(string token);
 
 /*
   Job:
@@ -65,7 +72,8 @@ QueryAnswer InTitle(Token keyword);
   //And or Or when no operator between? Think, think twice and contact the one doing RPN thing.
 */
 Expression RefineToken(string Query);
-
+QueryAnswer getSynonymSet(Token token);
+Expression getSynonymList(string query);
 int Precedence(Token token);
 Expression ConvertToRPN(Expression e);
 QueryAnswer CalculateRPN(Expression rpn);
@@ -75,5 +83,7 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList);
 double calScore(double n, double f, double N, double dl, double avg);
 
 vector<int> Top5Result(QueryAnswer qa, Expression e);
+
+set<int> GetHighlightInfo(int globalIndex, Expression rpn, string filename);
 
 #endif // !GLOBAL_H_

@@ -53,6 +53,8 @@ void Global::ReadData(string path)
 		filename = path + filename;
 
 		fileName.push_back(filename);
+		numberList.push_back({});
+		priceList.push_back({});
 
 		int index = fileName.size() - 1;
 		ifstream data;
@@ -83,6 +85,13 @@ void Global::ReadData(string path)
 							//trie.Insert(temp, true, index);
 							//line.push_back(temp);
 							oki.addToTF(temp, index);
+							if (isNumber(temp)) {
+								numberList[index].push_back(stoll(temp));
+							}
+							if (isPrice(temp)) {
+								string tmp = temp; tmp.erase(0, 1);
+								priceList[index].push_back(stoll(tmp));
+							}
 							length++;
 							temp.clear();
 						}
@@ -129,6 +138,13 @@ void Global::ReadData(string path)
 						//trie.Insert(temp, true, index);
 						//line.push_back(temp);
 						oki.addToTF(temp, index);
+						if (isNumber(temp)) {
+							numberList[index].push_back(stoll(temp));
+						}
+						if (isPrice(temp)) {
+							string tmp = temp; tmp.erase(0, 1);
+							priceList[index].push_back(stoll(tmp));
+						}
 						length++;
 						temp.clear();
 					}
@@ -147,6 +163,11 @@ void Global::ReadData(string path)
 		//trie.push_back(temp);
 		//cout << "file " << fileName[fileName.size() - 1] << endl;
 		data.close();
+		sort(numberList[index].begin(), numberList[index].end());
+		unique(numberList[index].begin(), numberList[index].end());
+		sort(priceList[index].begin(), priceList[index].end());
+		unique(priceList[index].begin(), priceList[index].end());
+
 	}
 	fin.close();
 	//string listFile = path + "___index.txt"
