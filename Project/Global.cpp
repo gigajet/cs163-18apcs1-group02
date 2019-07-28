@@ -44,6 +44,7 @@ void Global::ReadData(string path)
 	string filename;
 	while (getline(fin, filename))
 	{
+		//cout << "Entry: " << filename << endl;
 		//Trie temp;
 		//trie.push_back(temp);
 		int length = 0;
@@ -59,7 +60,7 @@ void Global::ReadData(string path)
 		int index = fileName.size() - 1;
 		ifstream data;
 		data.open(filename);
-		string word;
+		string word, kor;
 
 		string temp;
 		temp.clear();
@@ -85,16 +86,36 @@ void Global::ReadData(string path)
 							//trie.Insert(temp, true, index);
 							//line.push_back(temp);
 							oki.addToTF(temp, index);
+							/*
 							if (hasNumberPrefix(temp)) {
+								string kor("");
+								for (int i = 0; i < (int)temp.length(); ++i)
+									if (isdigit(temp[i]))
+										kor += temp[i];
+									else break;
+								while (!kor.empty() && kor[0] == '0') kor.erase(0, 1);
 								numberList[index].push_back(stoll(temp));
 								trie.Insert(to_string(stoll(temp)), true, index);
 								oki.addToTF(to_string(stoll(temp)), index);
+							} */
+							if (hasNumberPrefix(temp)) {
+								kor = getNumber(temp);
+								numberList[index].push_back(kor);
+								trie.Insert(kor, true, index);
+								oki.addToTF(kor, index);
 							}
 							if (hasPricePrefix(temp)) {
+								/*
 								string tmp = temp; tmp.erase(0, 1);
 								priceList[index].push_back(stoll(tmp));
 								trie.Insert("$"+to_string(stoll(tmp)), true, index);
-								oki.addToTF("$"+to_string(stoll(tmp)), index);
+								oki.addToTF("$"+to_string(stoll(tmp)), index); */
+								temp.erase(0, 1);
+								kor = getNumber(temp);
+								priceList[index].push_back(kor);
+								trie.Insert("$"+kor, true, index);
+								oki.addToTF("$"+kor, index);
+								
 							}
 							length++;
 							temp.clear();
@@ -104,15 +125,23 @@ void Global::ReadData(string path)
 				if (temp.size() != 0) {
 					trie.Insert(temp, true, index), length++, oki.addToTF(temp, index);
 					if (hasNumberPrefix(temp)) {
-						numberList[index].push_back(stoll(temp));
-						trie.Insert(to_string(stoll(temp)), true, index);
-						oki.addToTF(to_string(stoll(temp)), index);
+						kor = getNumber(temp);
+						numberList[index].push_back(kor);
+						trie.Insert(kor, true, index);
+						oki.addToTF(kor, index);
 					}
 					if (hasPricePrefix(temp)) {
+						/*
 						string tmp = temp; tmp.erase(0, 1);
 						priceList[index].push_back(stoll(tmp));
-						trie.Insert("$" + to_string(stoll(temp)), true, index);
-						oki.addToTF("$" + to_string(stoll(temp)), index);
+						trie.Insert("$"+to_string(stoll(tmp)), true, index);
+						oki.addToTF("$"+to_string(stoll(tmp)), index); */
+						temp.erase(0, 1);
+						kor = getNumber(temp);
+						priceList[index].push_back(kor);
+						trie.Insert("$" + kor, true, index);
+						oki.addToTF("$" + kor, index);
+
 					}
 				}
 				temp.clear();
@@ -143,17 +172,28 @@ void Global::ReadData(string path)
 								//trie.Insert(temp, true, index);
 								//oki.addToTF(temp, index); 
 								if (hasNumberPrefix(temp)) {
-									numberList[index].push_back(stoll(temp));
-									trie.Insert(to_string(stoll(temp)), true, index);
-									oki.addToTF(to_string(stoll(temp)), index);
+									kor = getNumber(temp);
+									if (kor != "") {
+										numberList[index].push_back(kor);
+										trie.Insert(kor, true, index);
+										oki.addToTF(kor, index);
+									}
 								}
-								if (hasPricePrefix(temp)) {
-									string tmp = temp; tmp.erase(0, 1);
-									priceList[index].push_back(stoll(tmp));
-									trie.Insert("$" + to_string(stoll(tmp)), true, index);
-									oki.addToTF("$" + to_string(stoll(tmp)), index);
-								}
+								else
+									if (hasPricePrefix(temp)) {
+										/*
+										string tmp = temp; tmp.erase(0, 1);
+										priceList[index].push_back(stoll(tmp));
+										trie.Insert("$"+to_string(stoll(tmp)), true, index);
+										oki.addToTF("$"+to_string(stoll(tmp)), index); */
+										temp.erase(0, 1);
+										kor = getNumber(temp);
+										priceList[index].push_back(kor);
+										trie.Insert("$" + kor, true, index);
+										oki.addToTF("$" + kor, index);
 
+									}
+								}
 							}
 							
 							//cout << temp<< " " << filename << endl;
@@ -162,12 +202,11 @@ void Global::ReadData(string path)
 							temp.clear();
 						}
 					}
-				}
 				//LAZY FOR REPARSING LAST TOKEN
 				//if (temp.length()!=0)
 				temp.clear();
 				break;
-			}
+			} //if
 		}
 		//cout << temp << " " << filename << endl;
 		//if (temp.size() != 0) trie.Insert(temp, true, index);
@@ -207,15 +246,23 @@ void Global::ReadData(string path)
 						//line.push_back(temp);
 						oki.addToTF(temp, index);
 						if (hasNumberPrefix(temp)) {
-							numberList[index].push_back(stoll(temp));
-							trie.Insert(to_string(stoll(temp)), false, index);
-							oki.addToTF(to_string(stoll(temp)), index);
+							kor = getNumber(temp);
+							numberList[index].push_back(kor);
+							trie.Insert(kor, false, index);
+							oki.addToTF(kor, index);
 						}
 						if (hasPricePrefix(temp)) {
+							/*
 							string tmp = temp; tmp.erase(0, 1);
 							priceList[index].push_back(stoll(tmp));
-							trie.Insert("$" + to_string(stoll(tmp)), false, index);
-							oki.addToTF("$" + to_string(stoll(tmp)), index);
+							trie.Insert("$"+to_string(stoll(tmp)), true, index);
+							oki.addToTF("$"+to_string(stoll(tmp)), index); */
+							temp.erase(0, 1);
+							kor = getNumber(temp);
+							priceList[index].push_back(kor);
+							trie.Insert("$" + kor, false, index);
+							oki.addToTF("$" + kor, index);
+
 						}
 						length++;
 						temp.clear();
@@ -225,15 +272,23 @@ void Global::ReadData(string path)
 			if (temp.size() != 0) {
 				trie.Insert(temp, false, index), length++, oki.addToTF(temp, index);
 				if (hasNumberPrefix(temp)) {
-					numberList[index].push_back(stoll(temp));
-					trie.Insert(to_string(stoll(temp)), false, index);
-					oki.addToTF(to_string(stoll(temp)), index);
+					kor = getNumber(temp);
+					numberList[index].push_back(kor);
+					trie.Insert(kor, false, index);
+					oki.addToTF(kor, index);
 				}
 				if (hasPricePrefix(temp)) {
+					/*
 					string tmp = temp; tmp.erase(0, 1);
 					priceList[index].push_back(stoll(tmp));
-					trie.Insert("$" + to_string(stoll(tmp)), false, index);
-					oki.addToTF("$" + to_string(stoll(tmp)), index);
+					trie.Insert("$"+to_string(stoll(tmp)), true, index);
+					oki.addToTF("$"+to_string(stoll(tmp)), index); */
+					temp.erase(0, 1);
+					kor = getNumber(temp);
+					priceList[index].push_back(kor);
+					trie.Insert("$" + kor, false, index);
+					oki.addToTF("$" + kor, index);
+
 				}
 			}
 			temp.clear();
@@ -260,21 +315,31 @@ void Global::ReadData(string path)
 							}
 
 						if (hasComma && (hasNumberPrefix(temp) || hasPricePrefix(temp))) {
-							//Co nen add vao trie "5000mb" hay khong?
+							//Co nen add "5,000mb"->"5000mb" vao Trie hay khong?
 							//trie.Insert(temp, true, index);
-							//oki.addToTF(temp, index);
+							//oki.addToTF(temp, index); 
 							if (hasNumberPrefix(temp)) {
-								numberList[index].push_back(stoll(temp));
-								trie.Insert(to_string(stoll(temp)), false, index);
-								oki.addToTF(to_string(stoll(temp)), index);
+								kor = getNumber(temp);
+								if (kor != "") {
+									numberList[index].push_back(kor);
+									trie.Insert(kor, false, index);
+									oki.addToTF(kor, index);
+								}
 							}
-							if (hasPricePrefix(temp)) {
-								string tmp = temp; tmp.erase(0, 1);
-								priceList[index].push_back(stoll(tmp));
-								trie.Insert("$" + to_string(stoll(tmp)), false, index);
-								oki.addToTF("$" + to_string(stoll(tmp)), index);
-							}
+							else
+								if (hasPricePrefix(temp)) {
+									/*
+									string tmp = temp; tmp.erase(0, 1);
+									priceList[index].push_back(stoll(tmp));
+									trie.Insert("$"+to_string(stoll(tmp)), true, index);
+									oki.addToTF("$"+to_string(stoll(tmp)), index); */
+									temp.erase(0, 1);
+									kor = getNumber(temp);
+									priceList[index].push_back(kor);
+									trie.Insert("$" + kor, false, index);
+									oki.addToTF("$" + kor, index);
 
+								}
 						}
 
 						//cout << temp<< " " << filename << endl;
@@ -291,16 +356,24 @@ void Global::ReadData(string path)
 		//cout << temp << " " << filename << endl;
 		if (temp.size() != 0) {
 			trie.Insert(temp, false, index), length++, oki.addToTF(temp, index);
-			if (hasNumberPrefix(temp)) {
-				numberList[index].push_back(stoll(temp));
-				trie.Insert(to_string(stoll(temp)), false, index);
-				oki.addToTF(to_string(stoll(temp)), index);
+			kor = getNumber(temp);
+			if (kor != "") {
+				numberList[index].push_back(kor);
+				trie.Insert(kor, false, index);
+				oki.addToTF(kor, index);
 			}
 			if (hasPricePrefix(temp)) {
+				/*
 				string tmp = temp; tmp.erase(0, 1);
 				priceList[index].push_back(stoll(tmp));
-				trie.Insert("$" + to_string(stoll(tmp)), false, index);
-				oki.addToTF("$" + to_string(stoll(tmp)), index);
+				trie.Insert("$"+to_string(stoll(tmp)), true, index);
+				oki.addToTF("$"+to_string(stoll(tmp)), index); */
+				temp.erase(0, 1);
+				kor = getNumber(temp);
+				priceList[index].push_back(kor);
+				trie.Insert("$" + kor, false, index);
+				oki.addToTF("$" + kor, index);
+
 			}
 		}
 		temp.clear();
@@ -311,9 +384,9 @@ void Global::ReadData(string path)
 		//trie.push_back(temp);
 		//cout << "file " << fileName[fileName.size() - 1] << endl;
 		data.close();
-		sort(numberList[index].begin(), numberList[index].end());
+		sort(numberList[index].begin(), numberList[index].end(), cmpNumber);
 		unique(numberList[index].begin(), numberList[index].end());
-		sort(priceList[index].begin(), priceList[index].end());
+		sort(priceList[index].begin(), priceList[index].end(), cmpNumber);
 		unique(priceList[index].begin(), priceList[index].end());
 
 	}

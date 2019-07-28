@@ -253,6 +253,7 @@ int main()
 	//Do real thing
 
 	//string path = "Search Engine-Data\\";
+	//string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
 	string path = "d:\\Minh\\clz\\data_small\\";
 	//MakeIndex(path);
 	Global* g = Global::GetInstance();

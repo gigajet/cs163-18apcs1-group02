@@ -175,6 +175,12 @@ vector<string> RefineToken(string Query)
 				}
 
 			}
+			else
+			{
+				finalExpression.emplace_back(expression[i]);
+				if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false)
+					finalExpression.emplace_back("or");// case no operation between two word 
+			}
 		}
 		else if(expression[i][0]=='$')
 		{
