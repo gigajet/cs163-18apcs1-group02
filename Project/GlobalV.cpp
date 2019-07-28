@@ -77,7 +77,6 @@ vector<string> RefineToken(string Query)
 				{
 					if (*it == '.')
 					{
-
 						if (it + 1 != Query.end() && it + 2 != Query.end())
 						{
 							if (*(it + 1) == '.' && *(it + 2) == '$' && temp[0] == '$')
@@ -96,7 +95,14 @@ vector<string> RefineToken(string Query)
 									temp.push_back('.');
 								}
 							}
+							else if (*(it + 1) == '.' && isdigit(*(it + 2)) && isdigit(temp[0]))
+							{
+								temp.push_back('.');
+								temp.push_back('.');
+							}
+							
 						}
+
 					}
 					else {
 						expression.emplace_back(temp);
@@ -124,7 +130,53 @@ vector<string> RefineToken(string Query)
 	int size = expression.size();
 	for (int i = 0; i < size; ++i)
 	{
-		if(expression[i][0]=='$')
+		if (isdigit(expression[i][0]))
+		{
+			string s = expression[i];
+			int pos = s.find("..");
+			bool flag = true;
+			if (pos != string::npos)
+			{
+				string t1;
+				string t2;
+				string t3;
+				for (string::iterator it = s.begin(); it != s.begin() + pos; ++it)
+				{
+					if (isdigit(*it))
+					{
+						t1.push_back(*it);
+					}
+					else flag = false;
+				}
+				t2.append("..");
+				for (string::iterator it = s.begin()+pos+2; it != s.end() ; ++it)
+				{
+					if (isdigit(*it))
+					{
+						t3.push_back(*it);
+					}
+					else flag = false;
+				}
+				if (flag == true)
+				{
+					finalExpression.push_back(t1);
+					finalExpression.push_back(t2);
+					finalExpression.push_back(t3);
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false)
+					{
+						finalExpression.emplace_back("or");// case no operation between two word 
+					}
+				}
+				else if (flag == false)
+				{
+					finalExpression.emplace_back(expression[i]);
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false)
+						finalExpression.emplace_back("or");// case no operation between two word 
+				}
+
+			}
+		}
+		else if(expression[i][0]=='$')
 		{
 			string s = expression[i];
 			int pos = s.find("..");
