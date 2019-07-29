@@ -6,34 +6,10 @@ void gotoxy(int x, int y) {
 	COORD c = { x, y };
 	SetConsoleCursorPosition(h, c);
 }
-
 void color(int x)
 {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(h, x);
-}
-
-void paintFrame(int x, int y, int height, int width) {
-	for (int i = 1; i < width; i++) {
-		gotoxy(i + y, x);
-		cout << (char)205;
-		gotoxy(i + y, x + height - 1);
-		cout << (char)205;
-	}
-	for (int i = 1; i < height - 1; i++) {
-		gotoxy(y, i + x);
-		cout << (char)186;
-		gotoxy(width + y - 1, i + x);
-		cout << (char)186;
-	}
-	gotoxy(1, 1);
-	cout << (char)201;
-	gotoxy(width, 1);
-	cout << (char)187;
-	gotoxy(1, height);
-	cout << (char)200;
-	gotoxy(width, height);
-	cout << (char)188;
 }
 void SEARCH() {
 	gotoxy(3, 3);
@@ -181,20 +157,6 @@ void ENGINE()
 		cout << "   ";
 	}
 }
-
-Token showLogo() {
-	SEARCH();
-	ENGINE();
-	//MANAGEMENT();
-	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(h, FOREGROUND_INTENSITY);
-	gotoxy(35, 19);
-	color(11);
-	cout << "Group 02 project"; color(7);
-	gotoxy(3, 23); cout << "Search >>";
-	Token keyword; cin >> keyword; return keyword;
-}
-
 void colorText(int colour, int textColor, string text, int x, int y, int width)
 {
 	gotoxy(x, y);
@@ -205,66 +167,189 @@ void colorText(int colour, int textColor, string text, int x, int y, int width)
 	cout << text;
 	color(8);
 }
-bool showResultandSearchdemo(Token &keyword, Expression path) {
-	//Show result
-	fflush(stdin);
-	int numoffile = min(path.size(), 5);
-	for (int i = 0; i < numoffile; i++)
+Token showLogo() {
+	SEARCH();
+	ENGINE();
+	//MANAGEMENT();
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(h, FOREGROUND_INTENSITY);
+	gotoxy(35, 19);
+	color(11);
+	cout << "Group 02 project"; color(7);
+	gotoxy(3, 23); cout << "Search >>";
+	Token keyword; getline(cin,keyword,'\n'); return keyword;
+}
+void SearchOption(char ch,Token& keyword) {
+	if (ch == 8)
 	{
-		gotoxy(5, 12 + 10 * i);
+		gotoxy(14 + keyword.size(), 2);
+		if (keyword.size() != 0) {
+			keyword.pop_back();
+			gotoxy(14 + keyword.size() + 1, 2); cout << '\b' << " " << '\b';
+		}
+	}
+	else//thêm ký tự vào từ khóa
+	{
+		keyword.push_back(ch);
+		gotoxy(14 + keyword.size() - 1, 2); cout << ch;
+	}
+}
+void DetailFile(int fileindex,vector<string> path)//hiện file chi tiết
+{
+	//cin.ignore(1000, '\n');
+	system("cls");
+	string fileout;
+	ifstream fin;
+	fin.open(path[fileindex]);
+	gotoxy(2, 1);
+	while (!fin.eof())
+	{
+		getline(fin, fileout, ' ');
+		cout << fileout << " ";
+	}
+	fin.close();
+	gotoxy(0, 0); cout << "Want to leave? Press 0:";
+	char a = _getch();
+	while (a != '0') {
+		gotoxy(24,0);
+		a = _getch();
+	}
+	fflush(stdin);
+	system("cls");
+}
+void DetailFile_RW(int globalIndex, Expression rpn) {
+	Global *g = Global::GetInstance();
+	set<int> highlightInfo = GetHighlightInfo(globalIndex, rpn, g->fileName[globalIndex]);
+	system("cls");
+	gotoxy(2, 1);
+	ifstream fin; fin.open(g->fileName[globalIndex]);
+	if (!fin.is_open()) {
+		cerr << "Dit me may! Detail file mo de'o duoc." << endl;
+		cerr << g->fileName[globalIndex] << endl;
+	}
+	else {
+		char c; int Count = 0;
+		while (fin.get(c)) {
+			Count++;
+			if (highlightInfo.count(Count) != 0) { //highlight this character
+				color(0xe); //14
+			}
+			else {
+				color(7);
+			}
+			cout << c;
+		}
+		fin.close();
+	}
+	gotoxy(0, 0); cout << "Want to leave? Press 0:";
+	char a = _getch();
+	while (a != '0') {
+		gotoxy(24, 0);
+		a = _getch();
+	}
+	fflush(stdin);
+	system("cls");
+}
+void Review5file(vector<string> path) {
+	for (int i = 0; i < path.size(); i++)
+	{
+		gotoxy(5, 5 + 10 * i);
 		ifstream fin;
 		fin.open(path[i]);
 		//In title 
 		string out;
-		getline(fin, out, '.');
+		getline(fin, out, '\n');
 		color(9);
-		cout << out << ".";
-		//In 100 ký tự kể từ title
+		cout << out ;
+		//In 50 từ kể từ title
 		int count = 0;
-		gotoxy(5, 12 + 10 * i + 3); color(7); cout << "...";
+		gotoxy(5, 5 + 10 * i + 3); color(7); cout << "...";
 		while (!fin.eof() && count <= 50)
 		{
 			++count;
 			getline(fin, out, ' ');
 			for (int i = 0; i < out.size(); i++)
 			{
-				if (out[i] == '\n')
-					out.erase(out.begin() + i);
+				if (out[i] == '\n') {
+					out[i] = '.';
+					out.insert(out.begin()+i,' ');
+				}
 			}
 			cout << out << " ";
 		}
-		cout << "... " << endl;
-		color(11); cout << "Source: " << path[i];
+		cout << "... " ;
+		color(11); cout <<'\n'<< "Source: " << path[i];
 		fin.close();
 	}
-	//Search new keyword
-	gotoxy(14 + keyword.size(), 2);
+}
+bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>& history, vector<int> globalIndex) {
+	//Show result
+	fflush(stdin);
+	system("cls");
+	//Cập nhật lịch sử
+	if (history.size() < 5) history.push_back(keyword);
+	for (int i = history.size()-1; i>=1; i--)
+		history[i] = history[i-1];
+	history[0] = keyword;
+	
+	//Trường hợp ko tìm thấy từ khóa
+	if (path.size() == 0)
+	{
+		color(10);
+		gotoxy(5, 3); cout << "Press tab to search more keywords";
+		gotoxy(5, 5);
+		cout << "Oops. There're no result for: "; color(11); cout << keyword;
+		gotoxy(5, 6);
+		color(10);
+		cout << "You might want to check your spelling or try something else";
+		//find another word
+	}
+	//Review 5 file
+	else {
+		Review5file(path);
+		//Search new keyword
+		color(10);
+		gotoxy(5, 3); cout << "Press tab to search more keywords";
+		gotoxy(5, 2);
+		cout << "Go to file detail: ";
+	}
 	color(7);
 	while (1) {
 		if (_kbhit())
 		{
 			char ch = _getch();
-			while (ch != 13 && ch != 27) {
-				if (ch == 8)
-				{
-					if (keyword.size() != 0) {
-						keyword.pop_back();
-						gotoxy(14 + keyword.size() + 1, 2); cout << '\b' << " " << '\b';
-					}
-					ch = _getch();
+			while (ch != 9 && ch != 27) {
+				if (ch >= 48 && ch <= 47+path.size()) {//di chuyển đến 1 file để đọc chi tiết
+					int fileindex = int(ch) - 48;
+						//DetailFile(fileindex, path);
+					DetailFile_RW(globalIndex[fileindex], ConvertToRPN(RefineToken(keyword)));
+						Review5file(path);
+						color(10);
+					gotoxy(5, 3); cout << "Press tab to search more keywords";
+					gotoxy(5, 2); color(10);
+					cout << "Go to file detail: ";
+					color(7);
 				}
-				else
-				{
-					keyword.push_back(ch);
-					gotoxy(14 + keyword.size() - 1, 2); cout << ch;
-					ch = _getch();
-				}
+				ch = _getch();
 			}
-			if (ch == 13) {
+			if (ch==9) {//Giao diện phần tìm kiếm tiếp theo
 				system("cls");
-				return true;
+				for (int i = 0; i < history.size(); i++)
+				{
+					gotoxy(14, 4 + i);
+					cout << history[i];
+				}
+				gotoxy(5, 2); color(10);
+				cout << "Search >>"; color(7); cout << keyword;
+				ch = _getch();
+				while (ch != 13&&ch!=27) {
+					SearchOption(ch, keyword);
+					ch = _getch();
+				}
+				if (ch == 13)
+					return true;//Thoát ra để tìm kiếm tiếp tục
 			}
-			else
+			if(ch==27)//Thoát
 			{
 				system("cls");
 				cout << "Good bye" << endl;
@@ -274,76 +359,50 @@ bool showResultandSearchdemo(Token &keyword, Expression path) {
 	}
 }
 void showResultandSearch(Token keyword) {
-	system("cls");
-	fflush(stdin);
-	Expression path, history;
+	//system("cls");
+	//fflush(stdin);
+
+	Expression e = RefineToken(keyword);
+
+	e = ConvertToRPN(e);
+
+	vector<string> path, history;
 	Global* g = Global::GetInstance();
-	history.push_back(keyword);
-	set<int> res = g->trie.Search(keyword, false);
-	//vector<int>a = Top5Result(res,g->fileName);
-	for(int i:res) path.push_back(g->fileName[i]);
-	gotoxy(5, 2); color(10);
-	cout << "Search >>"; color(7); cout << keyword;
-	bool keepsearching = showResultandSearchdemo(keyword, path);
+	//set<int> res = g->trie.Search(keyword, false);
+
+	QueryAnswer res = CalculateRPN(e);
+
+	vector<int>a = Top5Result(res, e);
+	for (int i : a) path.push_back(g->fileName[i]);
+
+	bool keepsearching = showResultandSearchdemo(keyword, path,history, a);
+
 	while (keepsearching)
 	{
 		system("cls");
+
 		Expression temp;
-		res = g->trie.Search(keyword, false);
-		//vector<int>b = Top5Result(res, g->fileName);
-		for (int i : res) temp.push_back(g->fileName[i]);
-		gotoxy(5, 2); color(10);
-		cout << "Search >>"; color(7); cout << keyword;
-		for (int i = 0; i < history.size(); i++)
-		{
-			gotoxy(14, 4 + i);
-			cout << history[i];
-		}
-		if (history.size() < 5)
-			history.push_back(keyword);
-		while (res.size() == 0)
+		/*res = g->trie.Search(keyword, false);
+		vector<int>b = Top5Result(res, {keyword});*/
+		//for (int i : b) temp.push_back(g->fileName[i]);
+
+    path.clear();
+		Expression e = RefineToken(keyword);
+		e = ConvertToRPN(e);
+
+		res = CalculateRPN(e);
+		vector<int> b = Top5Result(res, e);
+		for (int i : b) path.push_back(g->fileName[i]);
+
+		if (res.size() == 0)
 		{
 			gotoxy(7, 7);
 			cout << "Oops. There're no result for: "; color(11); cout << keyword;
 			gotoxy(7, 8);
 			cout << "You might want to check your spelling or try something else";
-			gotoxy(14 + keyword.size(), 2);
 			//find another word
-			while (1) {
-				if (_kbhit())
-				{
-					char ch = _getch();
-					while (ch != 13 && ch != 27) {
-						if (ch == 8)
-						{
-							if (keyword.size() != 0) {
-								keyword.pop_back();
-								gotoxy(14 + keyword.size() + 1, 2); cout << '\b' << " " << '\b';
-							}
-							ch = _getch();
-						}
-						else
-						{
-							keyword.push_back(ch);
-							gotoxy(14 + keyword.size() - 1, 2); cout << ch;
-							ch = _getch();
-						}
-					}
-					if (ch == 13) {
-						system("cls");
-						break;
-					}
-					else
-					{
-						system("cls");
-						cout << "Good bye" << endl;
-						return;
-					}
-				}
-			}
-			keepsearching = showResultandSearchdemo(keyword, temp);
-			res = g->trie.Search(keyword, false);
 		}
-		keepsearching = showResultandSearchdemo(keyword, temp);
+		keepsearching = showResultandSearchdemo(keyword, path ,history, b);
 	}
+	
 }
