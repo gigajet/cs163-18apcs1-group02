@@ -355,7 +355,9 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 					//Is it really a match?
 					if (additionalCheck[id] != -1) {
 						int ad = additionalCheck[id];
-						if (offSet - lastMatchOffset[ad] > AsteriskMatchLength)
+						int len = (int)processedToken[id].length();
+						//if (offSet - lastMatchOffset[ad] > AsteriskMatchLength)
+						if (offSet-len+1-lastMatchOffset[ad]-1 > AsteriskMatchLength)
 							continue;
 					}
 					//ADDITIONAL: must be the beginning of a word
@@ -409,29 +411,46 @@ QueryAnswer Exact(Token keyword) {
 	for (auto i = 0; i < Global::GetInstance()->fileName.size(); ++i)
 		lst.insert(i);
 
+	/*
+	Token loweredKw = "";
+	for (int i = 0; i < (int)keyword.length(); ++i) loweredKw += tolower(keyword[i]);
+	*/
 	string cur("");
 	string loweredKw("");
+	bool foundFirstToken = false;
+	//Chỉ tìm token sub-token đầu trong file.
 	for (char c : keyword) {
 		c = tolower(c);
-		if (c == ' ' || c == '\n') {
+		if (c == ' ' || c == '\n' || c == '*') {
 			if (cur != "" && cur != "*") {
-				cout << cur;
+				//cout << cur;
 				QueryAnswer k = Search(cur);
 				//cerr << cur << "'s size: " << k.size() << endl;
-				lst = And(lst, k);
+				if (k.size() > 1) {
+					foundFirstToken = true;
+					lst = And(lst, k);
+					break;
+				}
+				else {
+					foundFirstToken = true;
+					break;
+				}
 				cur.clear();
 			}
 		}
 		else cur += c;
-		loweredKw += c;
 	}
 	//Last sub-token
-	if (cur != "" && cur != "*") {
-		lst = And(lst, Search(cur));
+	if (!foundFirstToken && cur != "" && cur != "*") {
+		QueryAnswer k = Search(cur);
+		if (k.size() > 1)
+			lst = And(lst, Search(cur));
 	}
 	//cerr << cur;
 	//cerr << "lst's size: " << lst.size() << endl;
-	
+
+	for (auto c : keyword) loweredKw += tolower(c);
+
 	auto ans = AhoCorasick(lst, {"\""+ loweredKw +"\""});
 	return ans[0];
 }

@@ -260,6 +260,7 @@ int main()
 	g->ReadData(path);
 
 	//SearchDebug();
+
 	string a = showLogo();
 	showResultandSearch(a);
 
