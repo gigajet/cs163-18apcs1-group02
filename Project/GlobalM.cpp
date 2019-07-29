@@ -6,8 +6,6 @@
 
 using namespace std;
 
-const string exactOp = "/",
-searchOp = "+";
 
 //Return 0 if just a token, positive integer if operator. The higher integer is, the more precedence.
 int Precedence(Token token) {

@@ -68,6 +68,10 @@ bool hasNumberPrefix(string token);
 bool hasPricePrefix(string token);
 bool cmpNumber(string a, string b);
 
+
+const string exactOp = "/",
+searchOp = "+";
+
 /*
   Job:
   0. If the name "RefineToken" is bad, change it.

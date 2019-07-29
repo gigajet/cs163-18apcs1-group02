@@ -18,18 +18,99 @@ vector<int> Top5Result(QueryAnswer qa, Expression e)
 	map<int, double> res;
 	vector<int> Top5;
 
+	
+
 	for (auto index : qa)
 	{
+		stack<Token> st;
 		for (auto i : e)
 		{
 			if (Precedence(i) == 0)
 			{
-				double freq = (double)global->oki.tf[i][index];
+				/*double freq = (double)global->oki.tf[i][index];
 				double nq = (double)global->trie.GetN(i);
 				double dl = (double)global->oki.lengthTable[index];
 				double avg = global->oki.getAVGLength();
 
-				res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);
+				res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);*/
+				st.push(i);
+			}
+			if (Precedence(i) > 0)
+			{
+				if (i == searchOp)
+				{
+					string temp = st.top(); st.pop();
+
+					double freq = (double)global->oki.tf[temp][index];
+					double nq = (double)global->trie.GetN(temp);
+					double dl = (double)global->oki.lengthTable[index];
+					double avg = global->oki.getAVGLength();
+
+					res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);
+				}
+				if (i == exactOp)
+				{
+					string temp = st.top();
+					st.pop();
+					stringstream str(temp);
+					string word;
+					while (getline(str, word, ' '))
+					{
+						double freq = (double)global->oki.tf[word][index];
+						double nq = (double)global->trie.GetN(word);
+						double dl = (double)global->oki.lengthTable[index];
+						double avg = global->oki.getAVGLength();
+
+						res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);
+					}
+				}
+				if (i == "..")
+				{
+					Token tmp1 = st.top(); st.pop();
+					Token tmp2 = st.top(); st.pop();
+					if (cmpNumber(tmp2, tmp1)) swap(tmp1, tmp2);
+					Global* g = Global::GetInstance();
+					if (isNumber(tmp1)) {
+						for (auto it = lower_bound(g->numberList[index].begin(), g->numberList[index].end(), tmp1, cmpNumber);
+							it != upper_bound(g->numberList[index].begin(), g->numberList[index].end(), tmp2, cmpNumber);
+							it++) {
+							string temp = *it;
+							double freq = (double)global->oki.tf[temp][index];
+							double nq = (double)global->trie.GetN(temp);
+							double dl = (double)global->oki.lengthTable[index];
+							double avg = global->oki.getAVGLength();
+
+							res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);
+						}
+					}
+					else { //Price
+						for (auto it = lower_bound(g->priceList[index].begin(), g->priceList[index].end(), tmp1, cmpNumber);
+							it != upper_bound(g->priceList[index].begin(), g->priceList[index].end(), tmp2, cmpNumber);
+							it++) {
+							//cerr << *it << endl;
+							string temp = "$" + *it;
+							double freq = (double)global->oki.tf[temp][index];
+							double nq = (double)global->trie.GetN(temp);
+							double dl = (double)global->oki.lengthTable[index];
+							double avg = global->oki.getAVGLength();
+
+							res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);
+						}
+					}
+				}
+				if (i == "~")
+				{
+					vector<string> syn = getSynonymList(st.top()); st.pop();
+					for (auto temp : syn)
+					{
+						double freq = (double)global->oki.tf[temp][index];
+						double nq = (double)global->trie.GetN(temp);
+						double dl = (double)global->oki.lengthTable[index];
+						double avg = global->oki.getAVGLength();
+
+						res[index] += calScore(nq, freq, global->TotalDoc, dl, avg);
+					}
+				}
 			}
 		}
 		pq.push(make_pair(res[index], index));
