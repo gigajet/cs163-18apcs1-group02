@@ -324,7 +324,7 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 			continue;
 		}
 		while (fin.get(c)) {
-			buffer += c;
+			buffer += c; //buffer contain both uppercase and lowercase, just for match-checking.
 			if (c == '\n') {
 				lineNo++;
 				lineOffset = 0;
@@ -364,8 +364,9 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 					{
 						int len = (int)processedToken[id].length();
 						if (offSet - len - 1>= 0) {
-							if (buffer[(int)buffer.length() - len - 1] != ' '
-								&& buffer[(int)buffer.length() - len - 1] != '\n')
+							char x = buffer[(int)buffer.length() - len - 1];
+							//if (buffer[(int)buffer.length() - len - 1] != ' ' && ...)
+							if ((x>='a' && x<='z') || (x>='A' && x<='Z') || (x>='0'&&x<='9'))
 								continue;
 						}
 					}
@@ -692,7 +693,8 @@ set<int> GetHighlightPosition(string filename, vector<Token> tokenList) {
 				//Is it really a match?
 				if (additionalCheck[id] != -1) {
 					int ad = additionalCheck[id];
-					if (offSet - lastMatchOffset[ad] > AsteriskMatchLength)
+					int len = (int)processedToken[id].length();
+					if (offSet - len + 1 - lastMatchOffset[ad] - 1 > AsteriskMatchLength)
 						continue;
 				}
 				//ADDITIONAL: must be the beginning of a word
@@ -701,8 +703,12 @@ set<int> GetHighlightPosition(string filename, vector<Token> tokenList) {
 				{
 					int len = (int)processedToken[id].length();
 					if (offSet - len - 1 >= 0) {
+						/*
 						if (buffer[(int)buffer.length() - len - 1] != ' '
 							&& buffer[(int)buffer.length() - len - 1] != '\n')
+							*/
+						char x = buffer[(int)buffer.length() - len - 1];
+						if ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0'&&x <= '9'))
 							continue;
 					}
 				}
