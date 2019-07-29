@@ -259,17 +259,21 @@ bool isCompletelyMatched(string line, string query, int pos)  // Ex: set is not 
 	if (pos == string::npos) return false;
 	if (pos > 0 && pos < line.size() - 1)
 	{
-		if (line[pos - 1] == ',' && line[query.size() + pos] == ',')
-			return true;
+		if (line[pos - 1] == ',')
+		{
+			int temp = query.size() + pos;
+			if (line[temp] == ',')
+				return true;
+		}
 	}
-	else if (pos == 0)
+	if (pos == 0)
 	{
 		if (line[query.size()] == ',')
 			return true;
 	}
-	else if (pos + query.size() >= line.size())
+	if (pos + query.size() >= line.size())
 	{
-		if (line[pos] == ',')
+		if (line[pos-1] == ',')
 			return true;
 	}
 	return false;
