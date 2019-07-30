@@ -81,6 +81,7 @@ searchOp = "+";
   //And or Or when no operator between? Think, think twice and contact the one doing RPN thing.
 */
 Expression RefineToken(string Query);
+vector<string> RefineAddToken(string Query);
 QueryAnswer getSynonymSet(Token token);
 Expression getSynonymList(string query);
 int Precedence(Token token);
