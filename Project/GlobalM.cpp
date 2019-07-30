@@ -9,8 +9,8 @@ using namespace std;
 
 //Return 0 if just a token, positive integer if operator. The higher integer is, the more precedence.
 int Precedence(Token token) {
-	if (token == "or") return 1;
-	if (token == "and") return 2;
+	if (token == "|") return 1;
+	if (token == "&") return 2;
 	if (token == "-") return 3;
 	if (token == searchOp) return 4;
 	if (token == exactOp) return 4;
@@ -73,13 +73,14 @@ Expression ConvertToRPN(Expression e) {
 
 
 QueryAnswer CalculateRPN(Expression rpn) {
+	if (rpn.empty()) return QueryAnswer();
 	stack<variant<Token, QueryAnswer, int> > st;
 	bool invalidExpression = 0;
 	variant<Token, QueryAnswer, int> tmp1(0), tmp2(0);
 	try {
 		for (auto token : rpn)
 			if (Precedence(token) > 0) { //an operator
-				if (token == "or") {
+				if (token == "|") {
 					if (st.size() < 2) throw 1;
 					tmp1 = st.top(); st.pop();
 					tmp2 = st.top(); st.pop();
@@ -89,7 +90,7 @@ QueryAnswer CalculateRPN(Expression rpn) {
 					//cerr << "Or call." << endl;
 					//st.push(QueryAnswer());
 				}
-				if (token == "and") {
+				if (token == "&") {
 					if (st.size() < 2) throw 1;
 					tmp1 = st.top(); st.pop();
 					tmp2 = st.top(); st.pop();
