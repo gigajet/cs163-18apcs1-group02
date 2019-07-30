@@ -1,21 +1,16 @@
 #include"FrontEnd.h"
 #include <chrono>
+#include <filesystem>
 
 using namespace std;
 using namespace std::chrono;
 
-
 //#define TESTING_PHASE
-
-#ifdef TESTING_PHASE
-using namespace std::chrono;
-#endif
 
 void test()
 {
-	string s = "D:\\Study\\HCMUS\\CS\\ProjectCS163\\cs163-18apcs1-group02-master\\cs163-18apcs1-group02-master\\Project\\";
-	//string path = "Search Engine-Data\\";
-	string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
+	string s = "C:\\Users\\Admin\\source\\repos\\cs163-18apcs1-group02-master\\Search Engine-Data\\";
+	string path = "Search Engine-Data\\";
 	Global* g = Global::GetInstance();
 
 	g->ReadData(s);
@@ -29,12 +24,10 @@ void test()
 	//g->trie.Destructor();
 	string a = showLogo();
 	showResultandSearch(a);
-
 	Global::GetInstance()->trie.Destructor();
 	delete Global::GetInstance();
 	return;
 }
-
 void testRPN() {
 	//Case 1
 	Expression e;
@@ -86,18 +79,25 @@ void testRPN() {
 }
 void testRefineToken()
 {
-	string query = "\"dangcongsan\" and vietnam and quangvinh intitle:muonam";
+	string query = "\"dangcongsan\" and vietnam and quangvinh intitle:muonam +and xyz +abc -or -123 ~set";
+	Expression e2 = RefineAddToken(query);
 	Expression e = RefineToken(query);
 	e = ConvertToRPN(e);
+	e2 = ConvertToRPN(e2);
+	cout << "case +:";
+	for (auto token : e2)
+		cout << token << " ";
+	cout << endl;
 	for (auto token : e)
 		cout << token << " ";
 	cout << endl;
 	CalculateRPN(e);
+	CalculateRPN(e2);
 	cout << endl;
 }
 void testAho() {
 	//quick hack instead of actually reading file. Waste RAM during debugging? NO!
-	int Count = 0;
+	/*int Count = 0;
 	{
 		string path = "Search Engine-Data\\";
 		string listFile = path + "___index.txt";
@@ -111,8 +111,8 @@ void testAho() {
 			Count++;
 		}
 		fin.close();
+	}*/
 	cout << Global::GetInstance()->fileName.size();
-	}
 	set<int> s;
 	for (int i = 0; i < Global::GetInstance()->fileName.size(); ++i) s.insert(i);
 	vector<Token> tokenList;
@@ -131,7 +131,6 @@ void testAho() {
 	auto duration = duration_cast<milliseconds>(t2 - t1).count();
 	cout << "Aho corasick run in: " << duration;
 }
-
 void testExactSearch() {
 	if (Global::GetInstance()->fileName.size() == 0)
 		test();
@@ -142,11 +141,72 @@ void testExactSearch() {
 	
 	Global::GetInstance()->trie.Destructor();
 }
+void test1000Query()
+{
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	fstream fin;
+	fin.open("1000queries.txt");
+	int count;
+	Global* g = Global::GetInstance();
+	if (fin.is_open())
+	{
+		cout << "Open file success" << endl;
+		string s;
+		while (getline(fin, s))
+		{
+			vector<string> temp = RefineToken(s);
+			temp = ConvertToRPN(temp);
+			QueryAnswer a = CalculateRPN(temp);
+		}
+	}
+	fin.close();
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+	std::cout << "1000 queries in: " << time_span.count() << " seconds.";
+	std::cout << std::endl;
+}
+#ifdef TESTING_PHASE
+void DetailFile_RW(int globalIndex, Expression rpn);
+#endif
+
+//Make ___index.txt at that directory
+void MakeIndex(string path) {
+	vector<string> v;
+	for (auto &p : filesystem::directory_iterator(path)) {
+		v.push_back(p.path().filename().string());
+	}
+	ofstream fout; fout.open(path+"___index.txt");
+	for (auto x : v) {
+		fout << x << endl;
+	}
+	fout.close();
+}
+
+void SearchDebug() {
+	do {
+		string s;
+		cout << "Query: "; getline(cin, s);
+		if (s == "eXiT") return;
+		Expression e = RefineToken(s);
+		cout << "Refine token: ";
+		for (auto i : e) cout << i << " "; cout << endl;
+		e = ConvertToRPN(e);
+		cout << "RPN Exp: ";
+		for (auto i : e) cout << i << " "; cout << endl;
+		QueryAnswer ans = CalculateRPN(e);
+		cout << "File match: ";
+		for (auto i : ans) cout << i << " " << Global::GetInstance()->fileName[i] << endl; cout << endl;
+		cout << "Score: ";
+		vector<int> k = Top5Result(ans, e);
+		for (int x : k) cout << x << " "; cout << endl;
+		cout << "======" << endl;
+	} while (1);
+}
 
 void testTop5() {
 	if (Global::GetInstance()->fileName.size() == 0)
 		test();
-	QueryAnswer ans = Search("vietnam");
+	QueryAnswer ans = Search("5000");
 	cout << "Search result: " << ans.size() << endl;
 	vector<int> top5 = Top5Result(ans, { "vietnam" });
 	cout << "Top5: ";
@@ -159,16 +219,18 @@ void testTop5() {
 int main()
 {
 #ifdef TESTING_PHASE
+	Global *g = Global::GetInstance();
 	//test();
 
 	//cout << "Doc file run in: " << duration;
 
 	//testRPN();
 	//testAho();
-	//testRefineToken(); //bug in calculateRPN case intitle
+	testRefineToken(); //bug in calculateRPN case intitle
 	//testSearch();
 	//testExactSearch();
 
+	/*
 	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 	testTop5();
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
@@ -177,13 +239,54 @@ int main()
 
 	Global::GetInstance()->trie.Destructor();
 	delete Global::GetInstance();
+	*/
+
+	/*
+	string kw = "40..50";
+	Expression e = RefineToken(kw);
+	for (auto x : e) cout << x << endl;
+	*/
+	
+	/* //Test highlight
+	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine-Data\\Data1254.txt");
+	g->numberList.push_back({});
+	g->numberList[0].insert(g->numberList[0].end(), { 14, 18, 68, 79, 1992, 2010, 2013 });
+	Expression e;
+	e.insert(e.end(), { "14", "..", "2013"});
+	e = ConvertToRPN(e);
+	DetailFile_RW(0, e);
+	*/
+
+	/* //Test highlight case 2
+	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine-Data\\003.txt");
+	g->numberList.push_back({});
+	g->numberList[0].insert(g->numberList[0].end(), {70});
+	Expression e;
+	e.insert(e.end(), { "70" });
+	e = ConvertToRPN(e);
+	DetailFile_RW(0, e);
+	*/
+	
+	/* //Test number
+	g->fileName.push_back("d:\\Minh\\clz\\data\\Search Engine - Data\\Data1254.txt");
+	g->numberList.push_back({});
+	g->numberList[0].insert(g->numberList[0].end(), {14, 18, 68, 79, 1992, 2010, 2013});
+	QueryAnswer ans = NumberRange("69", "78");
+	for (auto i : ans) cout << i << " "; cout << endl;
+	cout << "Total: " << ans.size() << " files" << endl;
+	cout << endl;
+	*/
+
 #else
 	//Do real thing
-
+	
 	string path = "Search Engine-Data\\";
+	//string path = "d:\\Minh\\clz\\data\\Search Engine-Data\\";
+	//string path = "d:\\Minh\\clz\\data_small\\";
+	//MakeIndex(path);
 	Global* g = Global::GetInstance();
 	g->ReadData(path);
-
+	//SearchDebug();
 	string a = showLogo();
 	showResultandSearch(a);
 
@@ -205,6 +308,7 @@ int main()
 
 	Global::GetInstance()->trie.Destructor();
 	delete Global::GetInstance();
+	
 #endif
 	return 0;
 }

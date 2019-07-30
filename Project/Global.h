@@ -28,6 +28,8 @@ public:
 	int TotalDoc = 0;
 	OkapiBM25 oki;
 	Trie trie;
+	vector<vector<string> > numberList; //numberList[i]: list of number in file i of fileName
+	vector<vector<string> > priceList; //priceList[i]: list of prices, "$" discarded
 	vector<string> fileName;
 	void ReadData(string path);
 	static Global* GetInstance();
@@ -55,6 +57,20 @@ QueryAnswer Exclude(QueryAnswer a);
 QueryAnswer Search(Token keyword);
 QueryAnswer Exact(Token keyword);
 QueryAnswer InTitle(Token keyword);
+QueryAnswer PriceRange(Token a, Token b);
+QueryAnswer NumberRange(Token a, Token b);
+
+bool isNumber(string token);
+bool isPrice(string token);
+Token NumberCommaForm(Token numToken);
+Token PriceCommaForm(Token priceToken);
+bool hasNumberPrefix(string token);
+bool hasPricePrefix(string token);
+bool cmpNumber(string a, string b);
+
+
+const string exactOp = "/",
+searchOp = "+";
 
 /*
   Job:
@@ -65,7 +81,9 @@ QueryAnswer InTitle(Token keyword);
   //And or Or when no operator between? Think, think twice and contact the one doing RPN thing.
 */
 Expression RefineToken(string Query);
-
+vector<string> RefineAddToken(string Query);
+QueryAnswer getSynonymSet(Token token);
+Expression getSynonymList(string query);
 int Precedence(Token token);
 Expression ConvertToRPN(Expression e);
 QueryAnswer CalculateRPN(Expression rpn);
@@ -75,5 +93,9 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList);
 double calScore(double n, double f, double N, double dl, double avg);
 
 vector<int> Top5Result(QueryAnswer qa, Expression e);
+
+set<int> GetHighlightInfo(int globalIndex, Expression rpn, string filename);
+
+string getNumber(string word);
 
 #endif // !GLOBAL_H_
