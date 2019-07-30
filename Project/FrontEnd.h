@@ -19,7 +19,6 @@ typedef vector<Token> Expression;
 
 void gotoxy(int x, int y);
 void color(int x);
-void paintFrame(int x, int y, int height, int width);
 //void showName(const char* title);
 Token showLogo();
 void colorText(int colour, int textColor, string text, int x, int y, int width);

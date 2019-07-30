@@ -19,12 +19,10 @@ bool isOperation(string s, vector<string> operations)
 	}
 	return false;
 }
-
-
 vector<string> RefineToken(string Query)
 {
-	vector<string> operations = { "and","or","-","intitle","~" };
-	string delimeter = " ,.;:";
+	vector<string> operations = { "and","or","&","|" };
+	string delimeter = " ,.;:'?/";
 	vector<string> expression;
 	string temp;
 	int index = 0;
@@ -41,13 +39,14 @@ vector<string> RefineToken(string Query)
 				expression.emplace_back(temp);
 				temp.clear();
 			}
+			/*
 			else if (*it == '-' && temp.empty() == true)
 			{
 				temp.push_back('-');
 				expression.emplace_back(temp);
 				temp.clear();
 			}
-
+			*/
 			else if (*it == '"')
 			{
 				if (isFirstDoubleQuotation == false && temp.empty() == true)
@@ -77,7 +76,6 @@ vector<string> RefineToken(string Query)
 				{
 					if (*it == '.')
 					{
-
 						if (it + 1 != Query.end() && it + 2 != Query.end())
 						{
 							if (*(it + 1) == '.' && *(it + 2) == '$' && temp[0] == '$')
@@ -96,13 +94,20 @@ vector<string> RefineToken(string Query)
 									temp.push_back('.');
 								}
 							}
+							else if (*(it + 1) == '.' && isdigit(*(it + 2)) && isdigit(temp[0]))
+							{
+								temp.push_back('.');
+								temp.push_back('.');
+							}
+
 						}
+
 					}
 					else {
 						expression.emplace_back(temp);
 						temp.clear();
 					}
-					
+
 				}
 				else temp.push_back(tolower(*it));
 			}
@@ -120,22 +125,100 @@ vector<string> RefineToken(string Query)
 	//{"abc", "and", "xyz", "or", "def", "intitle", "you", "~", "haha", "123"} => {"abc","and","xyz","or","def","intitle","you","~","haha","or","123"}
 
 	vector<string> finalExpression;
-	
+
 	int size = expression.size();
 	for (int i = 0; i < size; ++i)
 	{
-		if(expression[i][0]=='$')
+		if (expression[i][0] == '+')
+		{
+			string s = expression[i];
+			string temp;
+			for (string::iterator it = s.begin() + 1; it != s.end(); ++it)
+				temp.push_back(*it);
+			finalExpression.emplace_back(temp);
+			if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false)
+				finalExpression.emplace_back("|");// case no operation between two word 
+		}
+		else if (expression[i][0] == '-')
+		{
+			string s = expression[i];
+			string temp;
+			for (string::iterator it = s.begin() + 1; it != s.end(); ++it)
+				temp.push_back(*it);
+
+			//if (i > 0 && isOperation(finalExpression[i - 1], operations) == true)
+				//finalExpression[finalExpression.size()-1]="-";// case no operation between two word
+			finalExpression.emplace_back("-");
+			finalExpression.emplace_back(temp);
+			if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false)
+				finalExpression.emplace_back("|");// case no operation between two word 		
+		}
+		else if (expression[i] == "and") finalExpression.emplace_back("&");
+		else if (expression[i] == "or") finalExpression.emplace_back("|");
+		else if (isdigit(expression[i][0]))
 		{
 			string s = expression[i];
 			int pos = s.find("..");
 			bool flag = true;
 			if (pos != string::npos)
 			{
-				
+				string t1;
+				string t2;
+				string t3;
+				for (string::iterator it = s.begin(); it != s.begin() + pos; ++it)
+				{
+					if (isdigit(*it))
+					{
+						t1.push_back(*it);
+					}
+					else flag = false;
+				}
+				t2.append("..");
+				for (string::iterator it = s.begin() + pos + 2; it != s.end(); ++it)
+				{
+					if (isdigit(*it))
+					{
+						t3.push_back(*it);
+					}
+					else flag = false;
+				}
+				if (flag == true)
+				{
+					finalExpression.push_back(t1);
+					finalExpression.push_back(t2);
+					finalExpression.push_back(t3);
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
+					{
+						finalExpression.emplace_back("|");// case no operation between two word 
+					}
+				}
+				else if (flag == false)
+				{
+					finalExpression.emplace_back(expression[i]);
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
+						finalExpression.emplace_back("|");// case no operation between two word 
+				}
+
+			}
+			else
+			{
+				finalExpression.emplace_back(expression[i]);
+				if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
+					finalExpression.emplace_back("|");// case no operation between two word 
+			}
+		}
+		else if (expression[i][0] == '$')
+		{
+			string s = expression[i];
+			int pos = s.find("..");
+			bool flag = true;
+			if (pos != string::npos)
+			{
+
 				string t1; // contain $123
 				string t2; // contain ..
 				string t3; // contain $234
-				for (string::iterator it = s.begin();it!= s.begin()+pos; ++it)
+				for (string::iterator it = s.begin(); it != s.begin() + pos; ++it)
 				{
 					if (isdigit(*it) == false)
 					{
@@ -147,7 +230,7 @@ vector<string> RefineToken(string Query)
 					}
 					t1.push_back(*it);
 				}
-				for (string::iterator it = s.begin()+pos+2; it != s.end(); ++it)
+				for (string::iterator it = s.begin() + pos + 2; it != s.end(); ++it)
 				{
 					if (isdigit(*it) == false)
 					{
@@ -162,36 +245,36 @@ vector<string> RefineToken(string Query)
 				t2.append("..");
 				if (flag == true)
 				{
-					
+
 					finalExpression.push_back(t1);
 					finalExpression.push_back(t2);
-					finalExpression.push_back(t3);	
+					finalExpression.push_back(t3);
 
-					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false)
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
 					{
-						finalExpression.emplace_back("or");// case no operation between two word 
+						finalExpression.emplace_back("|");// case no operation between two word 
 					}
 				}
 				else if (flag == false)
 				{
 					finalExpression.emplace_back(expression[i]);
-					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations)==false && isOperation(expression[i], operations) == false)
-						finalExpression.emplace_back("or");// case no operation between two word 
+					if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
+						finalExpression.emplace_back("|");// case no operation between two word 
 				}
 			}
 			else
 			{
 				finalExpression.emplace_back(expression[i]);
-				if (i < expression.size() - 1 && isOperation(expression[i + 1], operations)==false && isOperation(expression[i], operations) == false)
-					finalExpression.emplace_back("or");// case no operation between two word 
+				if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
+					finalExpression.emplace_back("|");// case no operation between two word 
 			}
-			
+
 		}
 		else
 		{
-			finalExpression.emplace_back(expression[i]);                                            
-			if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false  && isOperation(expression[i], operations) == false)
-				finalExpression.emplace_back("or");// case no operation between two word 
+			finalExpression.emplace_back(expression[i]);
+			if (i < expression.size() - 1 && isOperation(expression[i + 1], operations) == false && isOperation(expression[i], operations) == false && expression[i] != "intitle" && expression[i] != "~")
+				finalExpression.emplace_back("|");// case no operation between two word 
 		}
 	}
 	return finalExpression;
@@ -201,17 +284,21 @@ bool isCompletelyMatched(string line, string query, int pos)  // Ex: set is not 
 	if (pos == string::npos) return false;
 	if (pos > 0 && pos < line.size() - 1)
 	{
-		if (line[pos - 1] == ',' && line[query.size() + pos] == ',')
-			return true;
+		if (line[pos - 1] == ',')
+		{
+			int temp = query.size() + pos;
+			if (line[temp] == ',')
+				return true;
+		}
 	}
-	else if (pos == 0)
+	if (pos == 0)
 	{
 		if (line[query.size()] == ',')
 			return true;
 	}
-	else if (pos + query.size() >= line.size())
+	if (pos + query.size() >= line.size())
 	{
-		if (line[pos] == ',')
+		if (line[pos - 1] == ',')
 			return true;
 	}
 	return false;
@@ -266,8 +353,63 @@ QueryAnswer getSynonymSet(Token token)
 	{
 		for (int i = 0; i < synonymList.size(); ++i)
 		{
-			currentSet=Or(currentSet, Search(synonymList[i]));
+			currentSet = Or(currentSet, Search(synonymList[i]));
 		}
 	}
 	return currentSet;
+}
+vector<string> RefineAddToken(string Query)
+{
+	//vector<string> operations = { "and","or","-","intitle","~" };
+	string delimeter = " ,.;:'?/";
+
+	bool isAddNotation = false;
+	bool isFirstDoubleNotation = false;
+	vector<string> expression;
+	vector<string> finalExpression;
+	string temp;
+	string::iterator it = Query.begin();
+	while (it != Query.end())
+	{
+		if (*it == '"' && isFirstDoubleNotation == true)
+			isFirstDoubleNotation = false;
+		else if (*it == '"' && isFirstDoubleNotation == false)
+			isFirstDoubleNotation = true;
+		else if (*it != '"' && isFirstDoubleNotation == false)
+		{
+			if (*it == '+')
+			{
+				isAddNotation = true;
+			}
+			else if (isDelim(*it, delimeter) == true || it == Query.end())
+			{
+				if (!temp.empty())
+				{
+					expression.emplace_back(temp);
+				}
+
+				isAddNotation = false;
+				temp.clear();
+			}
+			else if (isAddNotation == true)
+			{
+				temp.push_back(*it);
+			}
+		}
+		++it;
+		if (it == Query.end())
+		{
+			if (!temp.empty() && isAddNotation == true)
+			{
+				expression.push_back(temp);
+			}
+		}
+	}
+	for (int i = 0; i < expression.size(); ++i)
+	{
+		finalExpression.emplace_back(expression[i]);
+		if (i + 1 < expression.size())
+			finalExpression.emplace_back("&");
+	}
+	return finalExpression;
 }

@@ -6,13 +6,11 @@
 
 using namespace std;
 
-const string exactOp = "/",
-searchOp = "+";
 
 //Return 0 if just a token, positive integer if operator. The higher integer is, the more precedence.
 int Precedence(Token token) {
-	if (token == "or") return 1;
-	if (token == "and") return 2;
+	if (token == "|") return 1;
+	if (token == "&") return 2;
 	if (token == "-") return 3;
 	if (token == searchOp) return 4;
 	if (token == exactOp) return 4;
@@ -75,13 +73,14 @@ Expression ConvertToRPN(Expression e) {
 
 
 QueryAnswer CalculateRPN(Expression rpn) {
+	if (rpn.empty()) return QueryAnswer();
 	stack<variant<Token, QueryAnswer, int> > st;
 	bool invalidExpression = 0;
 	variant<Token, QueryAnswer, int> tmp1(0), tmp2(0);
 	try {
 		for (auto token : rpn)
 			if (Precedence(token) > 0) { //an operator
-				if (token == "or") {
+				if (token == "|") {
 					if (st.size() < 2) throw 1;
 					tmp1 = st.top(); st.pop();
 					tmp2 = st.top(); st.pop();
@@ -91,7 +90,7 @@ QueryAnswer CalculateRPN(Expression rpn) {
 					//cerr << "Or call." << endl;
 					//st.push(QueryAnswer());
 				}
-				if (token == "and") {
+				if (token == "&") {
 					if (st.size() < 2) throw 1;
 					tmp1 = st.top(); st.pop();
 					tmp2 = st.top(); st.pop();
@@ -326,7 +325,7 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 			continue;
 		}
 		while (fin.get(c)) {
-			buffer += c;
+			buffer += c; //buffer contain both uppercase and lowercase, just for match-checking.
 			if (c == '\n') {
 				lineNo++;
 				lineOffset = 0;
@@ -355,7 +354,9 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 					//Is it really a match?
 					if (additionalCheck[id] != -1) {
 						int ad = additionalCheck[id];
-						if (offSet - lastMatchOffset[ad] > AsteriskMatchLength)
+						int len = (int)processedToken[id].length();
+						//if (offSet - lastMatchOffset[ad] > AsteriskMatchLength)
+						if (offSet-len+1-lastMatchOffset[ad]-1 > AsteriskMatchLength)
 							continue;
 					}
 					//ADDITIONAL: must be the beginning of a word
@@ -363,9 +364,10 @@ vector<QueryAnswer> AhoCorasick(set<int> fileList, vector<Token> tokenList) {
 					if (additionalCheck[id] == -1)
 					{
 						int len = (int)processedToken[id].length();
-						if (offSet - len >= 0) {
-							if (buffer[(int)buffer.length() - len - 1] != ' '
-								&& buffer[(int)buffer.length() - len - 1] != '\n')
+						if (offSet - len - 1>= 0) {
+							char x = buffer[(int)buffer.length() - len - 1];
+							//if (buffer[(int)buffer.length() - len - 1] != ' ' && ...)
+							if ((x>='a' && x<='z') || (x>='A' && x<='Z') || (x>='0'&&x<='9'))
 								continue;
 						}
 					}
@@ -409,29 +411,46 @@ QueryAnswer Exact(Token keyword) {
 	for (auto i = 0; i < Global::GetInstance()->fileName.size(); ++i)
 		lst.insert(i);
 
+	/*
+	Token loweredKw = "";
+	for (int i = 0; i < (int)keyword.length(); ++i) loweredKw += tolower(keyword[i]);
+	*/
 	string cur("");
 	string loweredKw("");
+	bool foundFirstToken = false;
+	//Chỉ tìm token sub-token đầu trong file.
 	for (char c : keyword) {
 		c = tolower(c);
-		if (c == ' ' || c == '\n') {
+		if (c == ' ' || c == '\n' || c == '*') {
 			if (cur != "" && cur != "*") {
-				cout << cur;
+				//cout << cur;
 				QueryAnswer k = Search(cur);
 				//cerr << cur << "'s size: " << k.size() << endl;
-				lst = And(lst, k);
+				if (k.size() > 1) {
+					foundFirstToken = true;
+					lst = And(lst, k);
+					break;
+				}
+				else {
+					foundFirstToken = true;
+					break;
+				}
 				cur.clear();
 			}
 		}
 		else cur += c;
-		loweredKw += c;
 	}
 	//Last sub-token
-	if (cur != "" && cur != "*") {
-		lst = And(lst, Search(cur));
+	if (!foundFirstToken && cur != "" && cur != "*") {
+		QueryAnswer k = Search(cur);
+		if (k.size() > 1)
+			lst = And(lst, Search(cur));
 	}
 	//cerr << cur;
 	//cerr << "lst's size: " << lst.size() << endl;
-	
+
+	for (auto c : keyword) loweredKw += tolower(c);
+
 	auto ans = AhoCorasick(lst, {"\""+ loweredKw +"\""});
 	return ans[0];
 }
@@ -449,16 +468,25 @@ bool isPrice(string token) {
 	token.erase(0, 1); if (token.length() == 0) return false;
 	return isNumber(token);
 }
+bool hasNumberPrefix(string token) {
+	if (token.length() == 0) return false;
+	return isdigit(token[0]);
+}
+bool hasPricePrefix(string token) {
+	if (token.length() < 1) return false;
+	if (token[0] != '$') return false;
+	token.erase(0, 1);
+	return hasNumberPrefix(token);
+}
 
 QueryAnswer PriceRange(Token a, Token b) {
 	Global *g = Global::GetInstance();
 	QueryAnswer ans;
 	a.erase(0, 1); b.erase(0, 1);
-	long long A = stoll(a), B = stoll(b);
-	if (A > B) swap(A, B);
+	if (cmpNumber(b,a)) swap(a, b);
 	for (int i = 0; i < (int)g->fileName.size(); ++i) {
-		if (upper_bound(g->priceList[i].begin(), g->priceList[i].end(), B) >
-			lower_bound(g->priceList[i].begin(), g->priceList[i].end(), A)) {
+		if (upper_bound(g->priceList[i].begin(), g->priceList[i].end(), b) >
+			lower_bound(g->priceList[i].begin(), g->priceList[i].end(), a)) {
 			ans.insert(i);
 		}
 	}
@@ -467,11 +495,12 @@ QueryAnswer PriceRange(Token a, Token b) {
 QueryAnswer NumberRange(Token a, Token b) {
 	Global *g = Global::GetInstance();
 	QueryAnswer ans;
-	long long A = stoll(a), B = stoll(b);
-	if (A > B) swap(A, B);
+	a.erase(0, 1); b.erase(0, 1);
+	//if (A > B) swap(A, B);
+	if (cmpNumber(b, a)) swap(a, b);
 	for (int i = 0; i < (int)g->fileName.size(); ++i) {
-		if (upper_bound(g->numberList[i].begin(), g->numberList[i].end(), B) >
-			lower_bound(g->numberList[i].begin(), g->numberList[i].end(), A)) {
+		if (upper_bound(g->numberList[i].begin(), g->numberList[i].end(), b) >
+			lower_bound(g->numberList[i].begin(), g->numberList[i].end(), a)) {
 			ans.insert(i);
 		}
 	}
@@ -665,7 +694,8 @@ set<int> GetHighlightPosition(string filename, vector<Token> tokenList) {
 				//Is it really a match?
 				if (additionalCheck[id] != -1) {
 					int ad = additionalCheck[id];
-					if (offSet - lastMatchOffset[ad] > AsteriskMatchLength)
+					int len = (int)processedToken[id].length();
+					if (offSet - len + 1 - lastMatchOffset[ad] - 1 > AsteriskMatchLength)
 						continue;
 				}
 				//ADDITIONAL: must be the beginning of a word
@@ -673,9 +703,13 @@ set<int> GetHighlightPosition(string filename, vector<Token> tokenList) {
 				if (additionalCheck[id] == -1)
 				{
 					int len = (int)processedToken[id].length();
-					if (offSet - len >= 0) {
+					if (offSet - len - 1 >= 0) {
+						/*
 						if (buffer[(int)buffer.length() - len - 1] != ' '
 							&& buffer[(int)buffer.length() - len - 1] != '\n')
+							*/
+						char x = buffer[(int)buffer.length() - len - 1];
+						if ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0'&&x <= '9'))
 							continue;
 					}
 				}
@@ -732,7 +766,12 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 	for (Token token : rpn) {
 		if (Precedence(token) > 0) {
 			if (token == searchOp) {
-				v.push_back(st.top()); st.pop();
+				Token tmp1 = st.top(); st.pop();
+				v.push_back(tmp1);
+				if (isNumber(tmp1))
+					v.push_back(NumberCommaForm(tmp1));
+				if (isPrice(tmp1))
+					v.push_back(PriceCommaForm(tmp1));
 			}
 			if (token == exactOp) {
 				v.push_back("\""+st.top()+"\""); st.pop();
@@ -740,22 +779,24 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 			if (token == "..") {
 				Token tmp1 = st.top(); st.pop();
 				Token tmp2 = st.top(); st.pop();
+				if (cmpNumber(tmp2, tmp1)) swap(tmp1, tmp2);
 				Global *g = Global::GetInstance();
 				if (isNumber(tmp1)) {
-					if (stoll(tmp1) > stoll(tmp2)) swap(tmp1, tmp2);
-					for (auto it = lower_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), stoll(tmp1));
-						it != upper_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), stoll(tmp2));
+					for (auto it = lower_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), tmp1, cmpNumber);
+						it != upper_bound(g->numberList[globalIndex].begin(), g->numberList[globalIndex].end(), tmp2, cmpNumber);
 						it++) {
 						//cerr << *it << endl;
-						v.push_back(to_string(*it));
+						v.push_back(*it);
+						v.push_back(NumberCommaForm(*it));
 					}
 				}
 				else { //Price
-					for (auto it = lower_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), stoll(tmp1));
-						it != upper_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), stoll(tmp2));
+					for (auto it = lower_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), tmp1, cmpNumber);
+						it != upper_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), tmp2, cmpNumber);
 						it++) {
 						//cerr << *it << endl;
-						v.push_back(to_string(*it));
+						v.push_back("$"+*it);
+						v.push_back("$"+NumberCommaForm(*it));
 					}
 				}
 			}
@@ -776,4 +817,40 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 set<int> GetHighlightInfo(int globalIndex, Expression rpn, string filename) {
 	vector<Token> v = GetHighlightToken(globalIndex, rpn);
 	return GetHighlightPosition(filename, v);
+}
+
+//"5000000" -> "5,000,000"
+Token NumberCommaForm(Token numToken) {
+	string ans(""); int count = 0;
+	for (int i = (int)numToken.length() - 1; i >= 0; --i) {
+		ans += numToken[i]; count++;
+		if (count % 3 == 0) ans += ',';
+	}
+	while (!ans.empty() && ans.back() == ',') ans.pop_back();
+	reverse(ans.begin(), ans.end());
+	return ans;
+}
+
+//"$5000" -> "$5,000"
+Token PriceCommaForm(Token priceToken) {
+	priceToken.erase(0, 1);
+	Token ans = NumberCommaForm(priceToken);
+	return "$" + ans;
+}
+
+string getNumber(string word) {
+	string ans("");
+	for (int i = 0; i < (int)word.length(); ++i)
+		if (isdigit(word[i]))
+			ans += word[i];
+		else break;
+	while (!ans.empty() && ans[0] == '0') ans.erase(0, 1);
+	if (ans.empty()) ans += '0';
+	return ans;
+}
+
+bool cmpNumber(string a, string b) {
+	if (a.length() < b.length()) return 1;
+	if (a.length() > b.length()) return 0;
+	return a < b;
 }

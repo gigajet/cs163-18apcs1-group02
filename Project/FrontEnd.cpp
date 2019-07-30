@@ -11,28 +11,6 @@ void color(int x)
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(h, x);
 }
-void paintFrame(int x, int y, int height, int width) {
-	for (int i = 1; i < width; i++) {
-		gotoxy(i + y, x);
-		cout << (char)205;
-		gotoxy(i + y, x + height - 1);
-		cout << (char)205;
-	}
-	for (int i = 1; i < height - 1; i++) {
-		gotoxy(y, i + x);
-		cout << (char)186;
-		gotoxy(width + y - 1, i + x);
-		cout << (char)186;
-	}
-	gotoxy(1, 1);
-	cout << (char)201;
-	gotoxy(width, 1);
-	cout << (char)187;
-	gotoxy(1, height);
-	cout << (char)200;
-	gotoxy(width, height);
-	cout << (char)188;
-}
 void SEARCH() {
 	gotoxy(3, 3);
 	color(170);
@@ -383,18 +361,21 @@ bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>&
 void showResultandSearch(Token keyword) {
 	//system("cls");
 	//fflush(stdin);
+	Expression e2 = RefineAddToken(keyword);
+	Expression e  = RefineToken(keyword);
 
-	Expression e = RefineToken(keyword);
-
+	e2 = ConvertToRPN(e2);
 	e = ConvertToRPN(e);
 
 	vector<string> path, history;
 	Global* g = Global::GetInstance();
-	history.push_back(keyword);
 	//set<int> res = g->trie.Search(keyword, false);
 
+	QueryAnswer res2 = CalculateRPN(e2);
 	QueryAnswer res = CalculateRPN(e);
-
+	
+	if(!e2.empty())
+		res = And(res, res2);
 	vector<int>a = Top5Result(res, e);
 	for (int i : a) path.push_back(g->fileName[i]);
 
@@ -410,10 +391,16 @@ void showResultandSearch(Token keyword) {
 		//for (int i : b) temp.push_back(g->fileName[i]);
 
     path.clear();
+		Expression e2 = RefineAddToken(keyword);
 		Expression e = RefineToken(keyword);
-		e = ConvertToRPN(e);
+		
+		e2 = ConvertToRPN(e2);
+		e =  ConvertToRPN(e);
 
+		res2 = CalculateRPN(e2);
 		res = CalculateRPN(e);
+
+		res = And(res2, res);
 		vector<int> b = Top5Result(res, e);
 		for (int i : b) path.push_back(g->fileName[i]);
 
