@@ -194,6 +194,28 @@ void SearchOption(char ch,Token& keyword) {
 		gotoxy(14 + keyword.size() - 1, 2); cout << ch;
 	}
 }
+int Suggestion(string keyword, vector<string>history)// Suggest keyword depend on history
+{
+	int count = 0;
+	for (int i = 0; i < history.size(); i++)
+	{
+		if (keyword.size() <= history[i].size())
+		{
+			int j;
+			for (j = 0; j < keyword.size(); j++)
+			{
+				if (keyword[j] != history[i][j])
+					break;
+			}
+			if (j == keyword.size()) {
+				gotoxy(14, 4 + count);
+				cout << history[i];
+				++count;
+			}
+		}
+	}
+	return count;
+}
 void DetailFile(int fileindex,vector<string> path)//hiện file chi tiết
 {
 	//cin.ignore(1000, '\n');
@@ -345,7 +367,12 @@ bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>&
 				cout << "Search >>"; color(7); cout << keyword;
 				ch = _getch();
 				while (ch != 13&&ch!=27) {
+					system("cls");
 					SearchOption(ch, keyword);
+					Suggestion(keyword, history);
+					gotoxy(5, 2); color(10);
+					cout << "Search >>"; color(7); cout << keyword;
+					gotoxy(14 + keyword.size(), 2);
 					ch = _getch();
 				}
 				if (ch == 13)
