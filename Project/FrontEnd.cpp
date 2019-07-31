@@ -246,7 +246,7 @@ void DetailFile_RW(int globalIndex, Expression rpn) {
 	gotoxy(2, 1);
 	ifstream fin; fin.open(g->fileName[globalIndex]);
 	if (!fin.is_open()) {
-		cerr << "Dit me may! Detail file mo de'o duoc." << endl;
+		cerr << "FileOutputError. Check if your file is valid." << endl;
 		cerr << g->fileName[globalIndex] << endl;
 	}
 	else {
