@@ -260,7 +260,9 @@ void Review5file(vector<string> path) {
 		string out;
 		getline(fin, out, '\n');
 		color(9);
-		cout << out ;
+		for (int i = 0; i < 100 && i < out.length(); i++)
+			cout << out[i];
+		cout << "...";
 		//In 50 từ kể từ title
 		int count = 0;
 		gotoxy(5, 5 + 10 * i + 3); color(7); cout << "...";
