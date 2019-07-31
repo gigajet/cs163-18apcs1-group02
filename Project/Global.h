@@ -98,4 +98,8 @@ set<int> GetHighlightInfo(int globalIndex, Expression rpn, string filename);
 
 string getNumber(string word);
 
+bool isDelim(char c, string delimeter);
+
+vector<string> RefineMinusToken(string Query);
+
 #endif // !GLOBAL_H_
