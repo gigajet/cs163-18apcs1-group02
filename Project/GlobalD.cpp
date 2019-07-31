@@ -130,3 +130,63 @@ vector<int> Top5Result(QueryAnswer qa, Expression e)
 	}
 	return Top5;
 }
+
+vector<string> RefineMinusToken(string Query)
+{
+	//vector<string> operations = { "and","or","-","intitle","~" };
+	string delimeter = " ,.;:'?/";
+
+	bool isMinusNotation = false;
+	bool isFirstDoubleNotation = false;
+	vector<string> expression;
+	vector<string> finalExpression;
+	string temp;
+	string::iterator it = Query.begin();
+	while (it != Query.end())
+	{
+		if (*it == '"' && isFirstDoubleNotation == true)
+			isFirstDoubleNotation = false;
+		else if (*it == '"' && isFirstDoubleNotation == false)
+			isFirstDoubleNotation = true;
+		else if (*it != '"' && isFirstDoubleNotation == false)
+		{
+			if (*it == '-')
+			{
+				isMinusNotation = true;
+			}
+			else if (isDelim(*it, delimeter) == true || it == Query.end())
+			{
+				if (!temp.empty())
+				{
+					expression.emplace_back("-");
+					expression.emplace_back(temp);
+				}
+
+				isMinusNotation = false;
+				temp.clear();
+			}
+			else if (isMinusNotation == true)
+			{
+				temp.push_back(*it);
+			}
+		}
+		++it;
+		if (it == Query.end())
+		{
+			if (!temp.empty() && isMinusNotation == true)
+			{
+				expression.emplace_back("-");
+				expression.push_back(temp);
+			}
+		}
+	}
+	for (int i = 0; i < expression.size(); ++i)
+	{
+		finalExpression.emplace_back(expression[i]);
+		//if (i + 1 < expression.size())
+		//	finalExpression.emplace_back("&");
+		if ((i % 2 == 1) && (i + 1) < expression.size())
+			finalExpression.emplace_back("&");
+	}
+	return finalExpression;
+}
