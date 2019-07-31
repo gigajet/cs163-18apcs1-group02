@@ -232,7 +232,7 @@ void DetailFile_RW(int globalIndex, Expression rpn) {
 		while (fin.get(c)) {
 			Count++;
 			if (highlightInfo.count(Count) != 0) { //highlight this character
-				color(0xe); //14
+				color(0x8f); //14
 			}
 			else {
 				color(7);
