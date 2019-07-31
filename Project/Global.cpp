@@ -385,9 +385,9 @@ void Global::ReadData(string path)
 		//cout << "file " << fileName[fileName.size() - 1] << endl;
 		data.close();
 		sort(numberList[index].begin(), numberList[index].end(), cmpNumber);
-		unique(numberList[index].begin(), numberList[index].end());
+		numberList[index].resize(unique(numberList[index].begin(), numberList[index].end()) - numberList[index].begin());
 		sort(priceList[index].begin(), priceList[index].end(), cmpNumber);
-		unique(priceList[index].begin(), priceList[index].end());
+		priceList[index].resize(unique(priceList[index].begin(), priceList[index].end()) - priceList[index].begin());
 
 	}
 	fin.close();
