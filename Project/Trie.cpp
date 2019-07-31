@@ -57,6 +57,10 @@ set<int> Trie::Search(TrieNode* root, string word, bool isInTitle)
 		current = node;
 	}
 	
+	/*if (current->isEndOfWord)
+		return (isInTitle) ? current->fileIndexTitle : current->fileIndex;
+	else
+		return result;*/
 	queue<TrieNode*> q;
 	q.push(current);
 

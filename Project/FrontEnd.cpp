@@ -361,9 +361,11 @@ bool showResultandSearchdemo(Token &keyword, vector<string> path,vector<string>&
 void showResultandSearch(Token keyword) {
 	//system("cls");
 	//fflush(stdin);
+	Expression e3 = RefineMinusToken(keyword);
 	Expression e2 = RefineAddToken(keyword);
 	Expression e  = RefineToken(keyword);
 
+	e3 = ConvertToRPN(e3);
 	e2 = ConvertToRPN(e2);
 	e = ConvertToRPN(e);
 
@@ -371,11 +373,15 @@ void showResultandSearch(Token keyword) {
 	Global* g = Global::GetInstance();
 	//set<int> res = g->trie.Search(keyword, false);
 
+	QueryAnswer res3 = CalculateRPN(e3);
 	QueryAnswer res2 = CalculateRPN(e2);
 	QueryAnswer res = CalculateRPN(e);
 	
 	if(!e2.empty())
 		res = And(res, res2);
+	if (!e3.empty())
+		res = And(res, res3);
+
 	vector<int>a = Top5Result(res, e);
 	for (int i : a) path.push_back(g->fileName[i]);
 
@@ -390,17 +396,33 @@ void showResultandSearch(Token keyword) {
 		vector<int>b = Top5Result(res, {keyword});*/
 		//for (int i : b) temp.push_back(g->fileName[i]);
 
-    path.clear();
-		Expression e2 = RefineAddToken(keyword);
-		Expression e = RefineToken(keyword);
+		path.clear();
+
+		e.clear();
+		e2.clear();
+		e3.clear();
+
+		e3 = RefineMinusToken(keyword);
+		e2 = RefineAddToken(keyword);
+		e = RefineToken(keyword);
 		
+		e3 = ConvertToRPN(e3);
 		e2 = ConvertToRPN(e2);
 		e =  ConvertToRPN(e);
 
+		res3.clear();
+		res2.clear();
+		res.clear();
+
+		res3 = CalculateRPN(e3);
 		res2 = CalculateRPN(e2);
 		res = CalculateRPN(e);
 
-		res = And(res2, res);
+		if (!e2.empty())
+			res = And(res, res2);
+		if (!e3.empty())
+			res = And(res, res3);
+
 		vector<int> b = Top5Result(res, e);
 		for (int i : b) path.push_back(g->fileName[i]);
 
