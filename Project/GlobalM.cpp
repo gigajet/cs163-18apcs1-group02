@@ -485,8 +485,8 @@ QueryAnswer PriceRange(Token a, Token b) {
 	a.erase(0, 1); b.erase(0, 1);
 	if (cmpNumber(b,a)) swap(a, b);
 	for (int i = 0; i < (int)g->fileName.size(); ++i) {
-		if (upper_bound(g->priceList[i].begin(), g->priceList[i].end(), b) >
-			lower_bound(g->priceList[i].begin(), g->priceList[i].end(), a)) {
+		if (upper_bound(g->priceList[i].begin(), g->priceList[i].end(), b, cmpNumber) >
+			lower_bound(g->priceList[i].begin(), g->priceList[i].end(), a, cmpNumber)) {
 			ans.insert(i);
 		}
 	}
@@ -499,8 +499,8 @@ QueryAnswer NumberRange(Token a, Token b) {
 	//if (A > B) swap(A, B);
 	if (cmpNumber(b, a)) swap(a, b);
 	for (int i = 0; i < (int)g->fileName.size(); ++i) {
-		if (upper_bound(g->numberList[i].begin(), g->numberList[i].end(), b) >
-			lower_bound(g->numberList[i].begin(), g->numberList[i].end(), a)) {
+		if (upper_bound(g->numberList[i].begin(), g->numberList[i].end(), b, cmpNumber) >
+			lower_bound(g->numberList[i].begin(), g->numberList[i].end(), a, cmpNumber)) {
 			ans.insert(i);
 		}
 	}
@@ -659,7 +659,7 @@ set<int> GetHighlightPosition(string filename, vector<Token> tokenList) {
 	char c;
 	ifstream fin; fin.open(filename);
 	if (!fin.is_open()) {
-		cerr << "Dit me may! File bi loi. GlobalM.cpp, GetHighlightPosition part 3." << endl;
+		cerr << "FileOpenError. Please check if file name is valid." << endl;
 		cerr << "File: " << filename << endl;
 	}
 	while (fin.get(c)) {
@@ -791,6 +791,7 @@ vector<Token> GetHighlightToken(int globalIndex, Expression rpn) {
 					}
 				}
 				else { //Price
+					tmp1.erase(0, 1); tmp2.erase(0, 1);
 					for (auto it = lower_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), tmp1, cmpNumber);
 						it != upper_bound(g->priceList[globalIndex].begin(), g->priceList[globalIndex].end(), tmp2, cmpNumber);
 						it++) {
